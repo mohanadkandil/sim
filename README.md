@@ -63,6 +63,7 @@ The tricky bit is cleanup. If the client disconnects mid-simulation, you need to
 You need Node 18+ and Python 3.11+.
 
 **Frontend:**
+
 ```bash
 cd stockholmhack
 npm install
@@ -70,6 +71,7 @@ npm run dev
 ```
 
 **Backend:**
+
 ```bash
 cd stockholmhack/backend
 pip install -r requirements.txt
@@ -108,7 +110,7 @@ stockholmhack/
 
 ## The team
 
-Built at Stockholm Hack 2024.
+Built at Stockholm Hack 2026.
 
 ## License
 
