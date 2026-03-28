@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 
 # Load project root .env file
-# Path: MiroFish/.env (relative to backend/app/config.py)
+# Path: Crucible/.env (relative to backend/app/config.py)
 project_root_env = os.path.join(os.path.dirname(__file__), '../../.env')
 
 if os.path.exists(project_root_env):
@@ -21,16 +21,16 @@ class Config:
     """Flask configuration class"""
     
     # Flask configuration
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'mirofish-secret-key')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'crucible-secret-key')
     DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
     
     # JSON configuration - disable ASCII escaping so non-ASCII characters display directly (not as \uXXXX)
     JSON_AS_ASCII = False
     
-    # LLM configuration (use OpenAI format)
-    LLM_API_KEY = os.environ.get('LLM_API_KEY')
-    LLM_BASE_URL = os.environ.get('LLM_BASE_URL', 'https://api.openai.com/v1')
-    LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gpt-4o-mini')
+    # LLM configuration (Gemini)
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    LLM_API_KEY = os.environ.get('LLM_API_KEY') or GEMINI_API_KEY
+    LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'gemini-2.5-flash-lite')
     
     # Zep configuration
     ZEP_API_KEY = os.environ.get('ZEP_API_KEY')

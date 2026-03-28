@@ -1,5 +1,5 @@
 """
-MiroFish Backend startup entry point
+Crucible Backend startup entry point
 """
 
 import os

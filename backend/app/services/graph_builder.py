@@ -54,7 +54,7 @@ class GraphBuilderService:
         self,
         text: str,
         ontology: Dict[str, Any],
-        graph_name: str = "MiroFish Graph",
+        graph_name: str = "Crucible Graph",
         chunk_size: int = 500,
         chunk_overlap: int = 50,
         batch_size: int = 3
@@ -186,12 +186,12 @@ class GraphBuilderService:
     
     def create_graph(self, name: str) -> str:
         """Create a Zep graph (public method)"""
-        graph_id = f"mirofish_{uuid.uuid4().hex[:16]}"
+        graph_id = f"crucible_{uuid.uuid4().hex[:16]}"
         
         self.client.graph.create(
             graph_id=graph_id,
             name=name,
-            description="MiroFish Social Simulation Graph"
+            description="Crucible Social Simulation Graph"
         )
         
         return graph_id
@@ -264,16 +264,16 @@ class GraphBuilderService:
             edge_class = type(class_name, (EdgeModel,), attrs)
             edge_class.__doc__ = description
             
-            # Build source_targets
+            # Build source_targets (Zep limit: max 10 per edge type)
             source_targets = []
-            for st in edge_def.get("source_targets", []):
+            for st in edge_def.get("source_targets", [])[:10]:  # Limit to 10
                 source_targets.append(
                     EntityEdgeSourceTarget(
                         source=st.get("source", "Entity"),
                         target=st.get("target", "Entity")
                     )
                 )
-            
+
             if source_targets:
                 edge_definitions[name] = (edge_class, source_targets)
         

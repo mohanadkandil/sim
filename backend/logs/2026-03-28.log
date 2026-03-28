@@ -1,0 +1,495 @@
+[2026-03-28 12:36:58] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:36:58] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:36:58] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:36:59] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:36:59] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:37:27] DEBUG [mirofish.request.log_request:55] Request: GET /health
+[2026-03-28 12:37:27] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:32] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:32] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:33] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:33] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:34] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:34] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:48] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:48] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:52] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:52] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:52] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:52] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:37:54] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:37:54] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:39:03] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:39:03] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:39:04] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:39:04] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:39:25] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:39:25] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:39:25] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:39:25] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:41:39] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:41:39] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:42:09] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/ontology/generate
+[2026-03-28 12:42:09] INFO [mirofish.api.generate_ontology:149] === Starting ontology generation ===
+[2026-03-28 12:42:09] DEBUG [mirofish.api.generate_ontology:156] Project name: lovable_users
+[2026-03-28 12:42:09] DEBUG [mirofish.api.generate_ontology:157] Simulation requirement: Simulate user reactions to new product features...
+[2026-03-28 12:42:09] INFO [mirofish.api.generate_ontology:176] Project created: proj_0fbe36503146
+[2026-03-28 12:42:09] INFO [mirofish.api.generate_ontology:211] Text extraction complete: 4906 characters total
+[2026-03-28 12:42:09] INFO [mirofish.api.generate_ontology:214] Calling LLM to generate ontology definition...
+[2026-03-28 12:42:10] DEBUG [mirofish.request.log_response:62] Response: 500
+[2026-03-28 12:42:57] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:42:57] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:42:57] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:42:57] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:42:57] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:43:08] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:43:08] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:43:11] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:43:11] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:43:15] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/ontology/generate
+[2026-03-28 12:43:15] INFO [mirofish.api.generate_ontology:149] === Starting ontology generation ===
+[2026-03-28 12:43:15] DEBUG [mirofish.api.generate_ontology:156] Project name: lovable_users
+[2026-03-28 12:43:15] DEBUG [mirofish.api.generate_ontology:157] Simulation requirement: Simulate user reactions to new product features...
+[2026-03-28 12:43:15] INFO [mirofish.api.generate_ontology:176] Project created: proj_dbe50f76616b
+[2026-03-28 12:43:15] INFO [mirofish.api.generate_ontology:211] Text extraction complete: 4906 characters total
+[2026-03-28 12:43:15] INFO [mirofish.api.generate_ontology:214] Calling LLM to generate ontology definition...
+[2026-03-28 12:43:15] DEBUG [mirofish.request.log_response:62] Response: 500
+[2026-03-28 12:43:28] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:43:28] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:43:28] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:43:28] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:43:28] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:43:28] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:43:28] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:43:33] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/ontology/generate
+[2026-03-28 12:43:33] INFO [mirofish.api.generate_ontology:149] === Starting ontology generation ===
+[2026-03-28 12:43:33] DEBUG [mirofish.api.generate_ontology:156] Project name: lovable_users
+[2026-03-28 12:43:33] DEBUG [mirofish.api.generate_ontology:157] Simulation requirement: Simulate user reactions to new product features...
+[2026-03-28 12:43:33] INFO [mirofish.api.generate_ontology:176] Project created: proj_915f6eacf9a8
+[2026-03-28 12:43:33] INFO [mirofish.api.generate_ontology:211] Text extraction complete: 4906 characters total
+[2026-03-28 12:43:33] INFO [mirofish.api.generate_ontology:214] Calling LLM to generate ontology definition...
+[2026-03-28 12:43:33] DEBUG [mirofish.request.log_response:62] Response: 500
+[2026-03-28 12:44:16] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:44:16] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:44:16] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:44:16] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:44:16] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:44:26] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:44:26] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:44:26] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:44:27] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:44:27] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:44:35] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:44:35] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:44:35] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:44:35] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:44:35] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:44:42] DEBUG [mirofish.request.log_request:55] Request: GET /health
+[2026-03-28 12:44:42] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:44:45] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:44:45] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:44:49] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/ontology/generate
+[2026-03-28 12:44:49] INFO [mirofish.api.generate_ontology:149] === Starting ontology generation ===
+[2026-03-28 12:44:49] DEBUG [mirofish.api.generate_ontology:156] Project name: lovable_users
+[2026-03-28 12:44:49] DEBUG [mirofish.api.generate_ontology:157] Simulation requirement: Simulate user reactions to new product features...
+[2026-03-28 12:44:49] INFO [mirofish.api.generate_ontology:176] Project created: proj_23a98e4c072b
+[2026-03-28 12:44:49] INFO [mirofish.api.generate_ontology:211] Text extraction complete: 4906 characters total
+[2026-03-28 12:44:49] INFO [mirofish.api.generate_ontology:214] Calling LLM to generate ontology definition...
+[2026-03-28 12:44:50] DEBUG [mirofish.request.log_response:62] Response: 500
+[2026-03-28 12:45:10] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:45:10] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:45:46] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:45:46] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:45:46] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:45:47] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:45:47] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:45:52] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/ontology/generate
+[2026-03-28 12:45:52] INFO [mirofish.api.generate_ontology:149] === Starting ontology generation ===
+[2026-03-28 12:45:52] DEBUG [mirofish.api.generate_ontology:156] Project name: lovable_users
+[2026-03-28 12:45:52] DEBUG [mirofish.api.generate_ontology:157] Simulation requirement: Simulate user reactions to new product features...
+[2026-03-28 12:45:52] INFO [mirofish.api.generate_ontology:176] Project created: proj_451d4ffc6b2f
+[2026-03-28 12:45:52] INFO [mirofish.api.generate_ontology:211] Text extraction complete: 4906 characters total
+[2026-03-28 12:45:52] INFO [mirofish.api.generate_ontology:214] Calling LLM to generate ontology definition...
+[2026-03-28 12:45:58] INFO [mirofish.api.generate_ontology:225] Ontology generation complete: 10 entity types, 7 relationship types
+[2026-03-28 12:45:58] INFO [mirofish.api.generate_ontology:234] === Ontology generation complete === Project ID: proj_451d4ffc6b2f
+[2026-03-28 12:45:58] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:45:58] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:45:58] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:01] DEBUG [mirofish.request.log_request:55] Request: OPTIONS /api/graph/build
+[2026-03-28 12:46:01] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:01] DEBUG [mirofish.request.log_request:55] Request: POST /api/graph/build
+[2026-03-28 12:46:01] DEBUG [mirofish.request.log_request:57] Request body: {'project_id': 'proj_451d4ffc6b2f'}
+[2026-03-28 12:46:01] INFO [mirofish.api.build_graph:282] === Starting graph build ===
+[2026-03-28 12:46:01] DEBUG [mirofish.api.build_graph:298] Request parameters: project_id=proj_451d4ffc6b2f
+[2026-03-28 12:46:01] INFO [mirofish.api.build_graph:365] Graph build task created: task_id=cae3a7d7-855a-4dff-bead-c89e707184af, project_id=proj_451d4ffc6b2f
+[2026-03-28 12:46:01] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:01] INFO [mirofish.build.build_task:376] [cae3a7d7-855a-4dff-bead-c89e707184af] Starting graph build...
+[2026-03-28 12:46:03] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:04] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:05] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:05] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:08] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:08] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:09] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:09] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:12] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:12] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:13] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:14] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:15] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:16] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:17] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:17] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:19] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:20] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:21] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:21] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:23] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:23] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:26] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:26] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:27] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:27] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:30] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:30] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:31] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:31] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:33] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:34] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:35] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:35] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:37] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:37] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:39] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:40] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:41] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:41] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:43] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:44] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:45] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:46] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:47] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:47] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:49] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:50] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:51] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:51] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:53] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:53] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:56] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:56] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:57] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:57] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:46:59] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:46:59] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:02] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:02] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:03] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:03] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:05] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:05] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:08] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:08] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:10] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:10] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:11] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:11] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:14] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:14] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:16] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:16] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:17] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:18] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:19] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:19] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:22] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:22] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:23] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:23] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:26] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:26] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:28] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:28] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:30] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:30] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:32] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:32] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:34] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:34] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:36] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:36] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:38] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:38] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:39] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:40] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:42] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:42] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:44] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:44] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:45] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:46] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:47] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:48] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:50] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:50] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:51] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:51] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:53] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:54] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:55] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:56] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:57] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:57] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:47:59] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:47:59] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:01] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:02] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:03] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:03] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:05] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:05] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:07] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:08] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:10] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:10] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:11] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:12] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:13] INFO [mirofish.build.build_task:472] [cae3a7d7-855a-4dff-bead-c89e707184af] Graph build complete: graph_id=mirofish_959f5c1243424e5d, nodes=30, edges=56
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/task/cae3a7d7-855a-4dff-bead-c89e707184af
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_request:55] Request: GET /api/graph/data/mirofish_959f5c1243424e5d
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:48:14] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 12:50:09] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:50:09] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:50:09] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:50:09] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:50:09] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 12:59:58] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 12:59:58] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 12:59:58] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 12:59:58] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 12:59:58] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 13:00:00] DEBUG [mirofish.request.log_request:55] Request: GET /health
+[2026-03-28 13:00:00] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 13:01:01] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 13:01:01] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 13:01:01] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 13:01:01] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:01:01] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 13:01:08] INFO [mirofish.create_app:38] ==================================================
+[2026-03-28 13:01:08] INFO [mirofish.create_app:39] MiroFish Backend starting...
+[2026-03-28 13:01:08] INFO [mirofish.create_app:40] ==================================================
+[2026-03-28 13:01:08] INFO [mirofish.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:01:08] INFO [mirofish.create_app:76] MiroFish Backend startup complete
+[2026-03-28 13:01:13] DEBUG [mirofish.request.log_request:55] Request: GET /health
+[2026-03-28 13:01:13] DEBUG [mirofish.request.log_response:62] Response: 200
+[2026-03-28 13:02:44] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:02:44] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:02:44] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:02:45] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:02:45] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:03:02] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:03:02] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:03:02] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:03:03] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:03:03] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:03:03] DEBUG [crucible.request.log_request:55] Request: GET /health
+[2026-03-28 13:03:03] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:05:08] DEBUG [crucible.request.log_request:55] Request: GET /health
+[2026-03-28 13:05:08] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:43:54] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:43:54] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:43:54] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:43:55] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:43:55] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:44:53] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:44:53] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:44:53] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:44:53] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:44:53] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:45:50] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:45:50] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:45:50] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:45:51] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:45:51] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:46:06] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:46:06] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:46:06] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:46:07] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:46:07] INFO [crucible.create_app:76] Crucible Backend startup complete
+[2026-03-28 13:46:11] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:46:11] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:46:11] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:46:12] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:46:12] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 13:51:17] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:51:17] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:52:40] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:52:40] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:52:40] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:52:40] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:53:10] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:53:10] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:53:48] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:53:48] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:53:48] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:53:48] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:08] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:08] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:08] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:08] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:32] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:54:32] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:54:32] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:54:33] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:54:33] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 13:54:34] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:34] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:34] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:34] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:48] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:48] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:48] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:48] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:50] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:50] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:54:50] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 13:54:50] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:55:13] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/ontology/generate-from-text
+[2026-03-28 13:55:13] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 13:55:13] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/ontology/generate-from-text
+[2026-03-28 13:55:13] DEBUG [crucible.request.log_request:57] Request body: {'text': 'test', 'simulation_requirement': 'Simulate how users would react to this feature: test', 'project_name': 'test'}
+[2026-03-28 13:55:13] INFO [crucible.api.generate_ontology_from_text:281] === Starting ontology generation from text ===
+[2026-03-28 13:55:13] INFO [crucible.api.generate_ontology_from_text:297] Project created: proj_fed3594b31d9
+[2026-03-28 13:55:22] INFO [crucible.api.generate_ontology_from_text:320] Ontology generated for project: proj_fed3594b31d9
+[2026-03-28 13:55:22] ERROR [crucible.api.generate_ontology_from_text:380] Error: TaskManager.create_task() missing 1 required positional argument: 'task_type'
+[2026-03-28 13:55:22] DEBUG [crucible.request.log_response:62] Response: 500
+[2026-03-28 13:58:14] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:58:14] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:58:14] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:58:15] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:58:15] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 13:58:53] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 13:58:53] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 13:58:53] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 13:58:54] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 13:58:54] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:57] Request body: {'text': "t4stAdd a dark mode toggle that saves user preference and syncs across devices\n\n  Medium complexity:\n  We're adding an AI-powered writing assistant that suggests improvements to user content, learns from their writing style over time, and can auto-complete sentences. It will be available to premium users first.\n\n  Rich feature (more entities):\n  Launch a collaborative workspace where teams can create shared documents, assign tasks to members, set deadlines with calendar integration, and get real-time notifications. Power users want keyboard shortcuts, new users need onboarding tutorials, and enterprise customers require SSO authentication.\n\n  Product change (interesting reactions):\n  Remove the free tier and convert all users to a $9.99/month subscription. Existing free users get a 30-day grace period. Students can apply for 50% discount.", 'project_name': 't4stAdd a dark mode toggle that saves user prefere', 'simulation_requirement': "Simulate how users would react to this feature: t4stAdd a dark mode toggle that saves user preference and syncs across devices\n\n  Medium complexity:\n  We're adding an AI-powered writing assistant that suggests improvements to user content, learns from their writing style over time, and can auto-complete sentences. It will be available to premium users first.\n\n  Rich feature (more entities):\n  Launch a collaborative workspace where teams can create shared documents, assign tasks to members, set deadlines with calendar integration, and get real-time notifications. Power users want keyboard shortcuts, new users need onboarding tutorials, and enterprise customers require SSO authentication.\n\n  Product change (interesting reactions):\n  Remove the free tier and convert all users to a $9.99/month subscription. Existing free users get a 30-day grace period. Students can apply for 50% discount."}
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:57] Request body: {'text': "t4stAdd a dark mode toggle that saves user preference and syncs across devices\n\n  Medium complexity:\n  We're adding an AI-powered writing assistant that suggests improvements to user content, learns from their writing style over time, and can auto-complete sentences. It will be available to premium users first.\n\n  Rich feature (more entities):\n  Launch a collaborative workspace where teams can create shared documents, assign tasks to members, set deadlines with calendar integration, and get real-time notifications. Power users want keyboard shortcuts, new users need onboarding tutorials, and enterprise customers require SSO authentication.\n\n  Product change (interesting reactions):\n  Remove the free tier and convert all users to a $9.99/month subscription. Existing free users get a 30-day grace period. Students can apply for 50% discount.", 'project_name': 't4stAdd a dark mode toggle that saves user prefere', 'simulation_requirement': "Simulate how users would react to this feature: t4stAdd a dark mode toggle that saves user preference and syncs across devices\n\n  Medium complexity:\n  We're adding an AI-powered writing assistant that suggests improvements to user content, learns from their writing style over time, and can auto-complete sentences. It will be available to premium users first.\n\n  Rich feature (more entities):\n  Launch a collaborative workspace where teams can create shared documents, assign tasks to members, set deadlines with calendar integration, and get real-time notifications. Power users want keyboard shortcuts, new users need onboarding tutorials, and enterprise customers require SSO authentication.\n\n  Product change (interesting reactions):\n  Remove the free tier and convert all users to a $9.99/month subscription. Existing free users get a 30-day grace period. Students can apply for 50% discount."}
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:04:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:05:01] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:57] Request body: {'text': 'I need to add a drak mode only ', 'project_name': 'I need to add a drak mode only ', 'simulation_requirement': 'Simulate how users would react to this feature: I need to add a drak mode only '}
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_request:57] Request body: {'text': 'I need to add a drak mode only ', 'project_name': 'I need to add a drak mode only ', 'simulation_requirement': 'Simulate how users would react to this feature: I need to add a drak mode only '}
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:38] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:46] ERROR [crucible.api.generate:991] Stream build error: headers: {'date': 'Sat, 28 Mar 2026 13:06:46 GMT', 'content-type': 'application/json; charset=utf-8', 'content-length': '69', 'connection': 'keep-alive', 'vary': 'Origin', 'x-content-type-options': 'nosniff', 'x-ratelimit-limit': '300', 'x-ratelimit-remaining': '298', 'x-ratelimit-reset': '1774703220', 'strict-transport-security': 'max-age=31536000; includeSubDomains', 'cf-cache-status': 'DYNAMIC', 'server': 'cloudflare', 'cf-ray': '9e36da9e4fcd5172-DUS'}, status_code: 400, body: message='source_targets cannot contain more than 10 items (max)'
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:06:58] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:07:25] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 14:07:25] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 14:07:25] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 14:07:26] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 14:07:26] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 14:07:26] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:07:26] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:07:51] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:07:51] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:08:31] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 14:08:31] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 14:08:31] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 14:08:32] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 14:08:32] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:57] Request body: {'text': '  Add AI-powered code review that automatically suggests improvements, catches bugs before deployment, and learns from team coding patterns. Power users want CLI integration and custom rules. New developers need in-editor explanations. Enterprise teams require audit logs and compliance checks.', 'project_name': '  Add AI-powered code review that automatically su', 'simulation_requirement': 'Simulate how users would react to this feature:   Add AI-powered code review that automatically suggests improvements, catches bugs before deployment, and learns from team coding patterns. Power users want CLI integration and custom rules. New developers need in-editor explanations. Enterprise teams require audit logs and compliance checks.'}
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:57] Request body: {'text': '  Add AI-powered code review that automatically suggests improvements, catches bugs before deployment, and learns from team coding patterns. Power users want CLI integration and custom rules. New developers need in-editor explanations. Enterprise teams require audit logs and compliance checks.', 'project_name': '  Add AI-powered code review that automatically su', 'simulation_requirement': 'Simulate how users would react to this feature:   Add AI-powered code review that automatically suggests improvements, catches bugs before deployment, and learns from team coding patterns. Power users want CLI integration and custom rules. New developers need in-editor explanations. Enterprise teams require audit logs and compliance checks.'}
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:21] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:09:32] INFO [crucible.api.generate:878] Found 0 entities for agent generation
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:05] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:38] INFO [crucible.create_app:38] ==================================================
+[2026-03-28 14:10:38] INFO [crucible.create_app:39] Crucible Backend starting...
+[2026-03-28 14:10:38] INFO [crucible.create_app:40] ==================================================
+[2026-03-28 14:10:39] INFO [crucible.create_app:49] Registered simulation process cleanup function
+[2026-03-28 14:10:39] INFO [crucible.create_app:77] Crucible Backend startup complete
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:10:39] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_request:55] Request: OPTIONS /api/graph/stream-build
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_request:55] Request: POST /api/graph/stream-build
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_request:57] Request body: {'text': 'we need to add cli tool for lovable', 'project_name': 'we need to add cli tool for lovable', 'simulation_requirement': 'Simulate how users would react to this feature: we need to add cli tool for lovable'}
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:12:14] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:25] INFO [crucible.api.generate:878] Found 0 entities for agent generation
+[2026-03-28 14:12:31] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:12:31] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:51] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:12:51] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:12:51] DEBUG [crucible.request.log_request:55] Request: GET /api/forum/topics
+[2026-03-28 14:12:51] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:14:03] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:14:03] DEBUG [crucible.request.log_response:62] Response: 200
+[2026-03-28 14:14:03] DEBUG [crucible.request.log_request:55] Request: GET /api/graph/project/list
+[2026-03-28 14:14:03] DEBUG [crucible.request.log_response:62] Response: 200

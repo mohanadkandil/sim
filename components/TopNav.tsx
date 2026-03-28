@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Zap, TrendingUp, Share2, MessageSquare } from "lucide-react";
+import { Zap, TrendingUp, Share2, MessagesSquare } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/graph", label: "Graph", icon: Share2 },
-  { href: "/thread", label: "Thread", icon: MessageSquare },
+  { href: "/forum", label: "Forum", icon: MessagesSquare },
   { href: "/dashboard", label: "Dashboard", icon: TrendingUp },
 ];
 

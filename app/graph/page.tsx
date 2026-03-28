@@ -72,6 +72,7 @@ export default function GraphPage() {
   const [streamProgress, setStreamProgress] = useState(0);
   const [streamGraphId, setStreamGraphId] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  const streamedAgentsRef = useRef<ForumAgent[]>([]);  // Track agents during streaming
 
   // BroadcastChannel for real-time sync with forum
   const broadcastChannel = useRef<BroadcastChannel | null>(null);
@@ -151,18 +152,20 @@ export default function GraphPage() {
         break;
 
       case "ontology":
-        setStreamStatus(`Ontology: ${data.entity_types} types, ${data.edge_types} relations`);
+        setStreamStatus(`Analyzing: ${data.entity_types} concepts found`);
         setStreamProgress(data.progress || 15);
         break;
 
       case "graph_created":
         setStreamGraphId(data.graph_id);
-        setStreamStatus("Graph created, extracting entities...");
+        setStreamStatus("Building knowledge graph...");
         setStreamProgress(data.progress || 25);
+        // Clear previous agents
+        streamedAgentsRef.current = [];
         break;
 
-      case "node":
-        // Add new node with animation
+      case "agent":
+        // Add new agent as a node with animation
         setNodes((prev) => {
           if (prev.some((n) => n.id === data.id)) return prev;
           return [
@@ -170,34 +173,71 @@ export default function GraphPage() {
             {
               id: data.id,
               name: data.name,
-              activity: data.summary || "",
-              sentiment: "neutral" as const,
-              location: data.label || "Entity",
-              color: data.color || "#8E8E93",
+              activity: data.summary || `${data.segment.replace('_', ' ')} - ${data.traits?.tech_level || 'user'}`,
+              sentiment: data.segment === 'churned' ? 'negative' as const :
+                        data.segment === 'power_user' ? 'positive' as const :
+                        data.segment === 'new_user' ? 'curious' as const : 'neutral' as const,
+              location: data.segment.replace('_', ' '),
+              color: data.color || "#8B5CF6",
+              avatar: data.avatar,
             },
           ];
         });
+
+        // Track agent in ref for sessionStorage
+        const newAgent: ForumAgent = {
+          id: data.id,
+          name: data.name,
+          avatar: data.avatar,
+          segment: data.segment,
+          segment_color: data.color,
+          entity_id: data.entity_id,
+          entity_type: data.entity_type,
+          entity_summary: data.summary,
+          ...data.traits
+        };
+        streamedAgentsRef.current.push(newAgent);
+
+        // Also update state for UI
+        setAgents((prev) => {
+          if (prev.some((a) => a.id === data.id)) return prev;
+          return [...prev, newAgent];
+        });
+        setStreamProgress(data.progress || 50);
         break;
 
       case "edge":
-        // Add new edge
+        // Add edge between agents
         setLinks((prev) => {
-          if (prev.some((l) => l.source === data.source && l.target === data.target)) return prev;
+          if (prev.some((l) =>
+            (l.source === data.source && l.target === data.target) ||
+            (l.source === data.target && l.target === data.source)
+          )) return prev;
           return [
             ...prev,
             {
               source: data.source,
               target: data.target,
-              type: "social" as const,
+              type: data.relation === 'same_segment' ? 'work' as const : 'social' as const,
             },
           ];
         });
         break;
 
       case "complete":
-        setStreamStatus(`Complete: ${data.node_count} entities, ${data.edge_count} connections`);
+        setStreamStatus(`Ready: ${data.agent_count} agents, ${data.edge_count || 0} connections`);
         setStreamProgress(100);
         setIsStreaming(false);
+
+        // Store agents for forum using ref (ensures we have all agents)
+        sessionStorage.setItem("crucible_agents", JSON.stringify(streamedAgentsRef.current));
+        if (data.graph_id) {
+          sessionStorage.setItem("crucible_graph_id", data.graph_id);
+        }
+
+        // Update state with all agents
+        setAgents(streamedAgentsRef.current);
+
         // Refresh projects list
         fetchProjects();
         break;
@@ -703,19 +743,23 @@ export default function GraphPage() {
                   </div>
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-[#2D2D2D]">Building Graph</div>
+                  <div className="text-sm font-medium text-[#2D2D2D]">Generating Agents</div>
                   <div className="text-xs text-[#8E8E93]">{streamStatus}</div>
                 </div>
               </div>
               <div className="w-full bg-[#F0EFEC] rounded-full h-2 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#7C9070] transition-all duration-500 ease-out"
+                  className="h-full bg-gradient-to-r from-[#8B5CF6] to-[#22C55E] transition-all duration-500 ease-out"
                   style={{ width: `${streamProgress}%` }}
                 />
               </div>
               <div className="flex justify-between mt-2 text-[10px] text-[#8E8E93]">
-                <span>{nodes.length} entities</span>
-                <span>{links.length} connections</span>
+                <span>{nodes.length} agents</span>
+                <span>
+                  {nodes.filter(n => n.location === 'power user').length} power •
+                  {nodes.filter(n => n.location === 'casual').length} casual •
+                  {nodes.filter(n => n.location === 'new user').length} new
+                </span>
                 <span>{streamProgress}%</span>
               </div>
             </div>
