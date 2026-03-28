@@ -25,7 +25,7 @@ export default function TopNav() {
           <Zap className="w-[15px] h-[15px] text-white" />
         </div>
         <span className="font-display text-lg font-medium text-text">
-          Crucible
+          Simuul
         </span>
       </Link>
 

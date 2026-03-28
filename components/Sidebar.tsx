@@ -23,7 +23,7 @@ export function Sidebar({
         <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
           <FireIcon />
         </div>
-        <span className="font-bold text-lg text-foreground">Crucible</span>
+        <span className="font-bold text-lg text-foreground">Simuul</span>
       </div>
 
       {/* Segments section */}

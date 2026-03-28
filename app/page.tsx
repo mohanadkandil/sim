@@ -1,125 +1,109 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Zap, Lightbulb, Users, Play, Loader2 } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
-const API_BASE = "http://localhost:5001/api/graph";
-
-const SUGGESTIONS = [
-  "Add AI copilot that helps users write better content",
-  "Remove free tier and convert to paid-only model",
-  "Redesign onboarding with interactive tutorials",
-  "Launch mobile app with offline support",
+const avatars = [
+  { name: 'eddy-lin', size: 180, x: 2, y: 3, glow: '#8B5CF6', blur: 50, spread: 8, big: true },
+  { name: 'klaus-mueller', size: 85, x: 14, y: 11, glow: '#7C9070', blur: 30, spread: 4 },
+  { name: 'tom-moreno', size: 75, x: 26, y: 4, glow: '#5B9BD5', blur: 25, spread: 3 },
+  { name: 'mei-lin', size: 90, x: 38, y: 8, glow: '#8B5CF6', blur: 30, spread: 4 },
+  { name: 'hailey-johnson', size: 70, x: 52, y: 4, glow: '#F59E0B', blur: 25, spread: 3 },
+  { name: 'isabella-rodriguez', size: 85, x: 64, y: 7, glow: '#7C9070', blur: 30, spread: 4 },
+  { name: 'adam-smith', size: 80, x: 76, y: 5, glow: '#5B9BD5', blur: 28, spread: 3 },
+  { name: 'rajiv-patel', size: 170, x: 85, y: 5, glow: '#8B5CF6', blur: 45, spread: 7, big: true },
+  { name: 'giorgio-rossi', size: 95, x: 90, y: 26, glow: '#5B9BD5', blur: 35, spread: 5 },
+  { name: 'john-lin', size: 160, x: 87, y: 42, glow: '#7C9070', blur: 45, spread: 7, big: true },
+  { name: 'ayesha-khan', size: 85, x: 91, y: 64, glow: '#8B5CF6', blur: 30, spread: 4 },
+  { name: 'carmen-ortiz', size: 150, x: 87.5, y: 79, glow: '#F59E0B', blur: 40, spread: 6, big: true },
+  { name: 'francisco-lopez', size: 80, x: 76, y: 87, glow: '#7C9070', blur: 28, spread: 4 },
+  { name: 'latoya-williams', size: 95, x: 62.5, y: 84, glow: '#8B5CF6', blur: 32, spread: 4 },
+  { name: 'sam-moore', size: 75, x: 50, y: 89, glow: '#5B9BD5', blur: 25, spread: 3 },
+  { name: 'jennifer-moore', size: 90, x: 37, y: 86, glow: '#7C9070', blur: 30, spread: 4 },
+  { name: 'tamara-taylor', size: 70, x: 25, y: 89, glow: '#F59E0B', blur: 25, spread: 3 },
+  { name: 'wolfgang-schulz', size: 85, x: 12.5, y: 84, glow: '#8B5CF6', blur: 30, spread: 4 },
+  { name: 'ryan-park', size: 165, x: 2, y: 77, glow: '#5B9BD5', blur: 45, spread: 7, big: true },
+  { name: 'yuriko-yamamoto', size: 90, x: 3, y: 61, glow: '#7C9070', blur: 32, spread: 4 },
+  { name: 'arthur-burton', size: 155, x: 1.4, y: 39, glow: '#8B5CF6', blur: 45, spread: 7, big: true },
+  { name: 'maria-lopez', size: 80, x: 3.5, y: 24, glow: '#F59E0B', blur: 28, spread: 4 },
 ];
 
-export default function InputPage() {
+export default function LandingPage() {
   const router = useRouter();
-  const [featureText, setFeatureText] = useState("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [status, setStatus] = useState("");
 
-  const handleRun = async () => {
-    if (!featureText.trim()) return;
-
-    setIsRunning(true);
-    setStatus("Starting simulation...");
-
-    // Store the feature text for the graph page to use
-    sessionStorage.setItem("crucible_feature_text", featureText);
-    sessionStorage.setItem("crucible_stream_mode", "true");
-
-    // Navigate immediately to graph page to see agents populate in real-time
-    router.push("/graph");
-  };
-
-  const handleSuggestion = (suggestion: string) => {
-    setFeatureText(suggestion);
+  const handleTryNow = () => {
+    router.push('/start');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-5">
-      <div className="w-full max-w-[680px] flex flex-col items-center gap-10">
-        {/* Top Section */}
-        <div className="flex flex-col items-center gap-4 w-full">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-sage rounded-[10px] flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-display text-[22px] font-medium text-text">
-              Crucible
-            </span>
-          </div>
+    <main className="relative w-full min-h-screen bg-[#08080F] overflow-hidden">
+      {/* Background gradient glows */}
+      <div
+        className="absolute w-[70%] h-[70%] left-[10%] top-[20%] pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(124, 144, 112, 0.15) 0%, transparent 70%)' }}
+      />
+      <div
+        className="absolute w-[60%] h-[60%] right-0 top-[40%] pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at center, rgba(139, 92, 246, 0.12) 0%, transparent 70%)' }}
+      />
 
-          {/* Headline */}
-          <h1 className="font-display text-[44px] font-medium text-text text-center leading-[1.15] tracking-[-1px]">
-            What feature will you ship next?
-          </h1>
-        </div>
+      {/* Avatars */}
+      {avatars.map((avatar) => (
+        <div
+          key={avatar.name}
+          className="absolute rounded-full bg-cover bg-center z-10"
+          style={{
+            width: avatar.size,
+            height: avatar.size,
+            left: `${avatar.x}%`,
+            top: `${avatar.y}%`,
+            backgroundImage: `url(/avatars/${avatar.name}.png)`,
+            boxShadow: avatar.big
+              ? `0 0 ${avatar.blur}px ${avatar.spread}px ${avatar.glow}, 0 0 ${avatar.blur * 1.6}px ${avatar.spread * 2}px ${avatar.glow}50`
+              : `0 0 ${avatar.blur}px ${avatar.spread}px ${avatar.glow}80`,
+          }}
+        />
+      ))}
 
-        {/* Input Card */}
-        <div className="w-full bg-surface rounded-[16px] p-6 border border-border shadow-[0_4px_30px_#00000006] flex flex-col gap-4">
-          <textarea
-            value={featureText}
-            onChange={(e) => setFeatureText(e.target.value)}
-            className="w-full bg-background rounded-[12px] border border-border p-4 px-5 text-[15px] text-text leading-relaxed resize-none outline-none min-h-[100px] placeholder:text-text-secondary focus:border-sage transition-colors"
-            rows={4}
-            placeholder="Describe your feature idea in detail. For example: We will add an AI-powered export feature that automatically formats data for different platforms..."
-            disabled={isRunning}
-          />
+      {/* Center Content */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 z-20 text-center px-4">
+        <span className="text-lg font-semibold text-[#7C9070] tracking-[2px] uppercase">
+          Simuul
+        </span>
 
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            {/* Hints */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="pill pill-sage">
-                <Lightbulb className="w-3 h-3 text-sage" />
-                Be specific
-              </span>
-              <span className="pill pill-curious">
-                <Users className="w-3 h-3 text-curious" />
-                200 agents ready
-              </span>
-            </div>
+        <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+          Simulate your users
+        </h1>
 
-            {/* Run Button */}
-            <button
-              onClick={handleRun}
-              disabled={isRunning || !featureText.trim()}
-              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isRunning ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{status || "Starting..."}</span>
-                </>
-              ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  <span>Run Simulation</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+        <h2 className="text-4xl md:text-6xl font-extrabold text-[#7C9070] leading-tight -mt-2">
+          before you ship
+        </h2>
 
-        {/* Suggestions */}
-        <div className="flex flex-col items-center gap-3 w-full">
-          <span className="text-xs font-medium text-text-muted">Try an example:</span>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {SUGGESTIONS.map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => handleSuggestion(suggestion)}
-                disabled={isRunning}
-                className="inline-flex items-center rounded-[8px] px-3 py-2 border border-border bg-transparent text-xs text-text-secondary cursor-pointer hover:bg-background hover:border-sage transition-colors disabled:opacity-50 max-w-[200px] text-left"
-              >
-                {suggestion.length > 40 ? suggestion.slice(0, 40) + "..." : suggestion}
-              </button>
-            ))}
-          </div>
+        <p className="text-base md:text-lg text-white/65 max-w-[580px] leading-relaxed">
+          Test pricing changes, feature launches, and PR disasters with 200 AI
+          users in 30 seconds. No surveys. No waiting. Just answers.
+        </p>
+
+        {/* CTA Button */}
+        <button
+          onClick={handleTryNow}
+          className="px-10 py-4 rounded-full text-white text-base font-semibold transition-all hover:-translate-y-0.5 hover:scale-105 mt-2"
+          style={{
+            background: 'linear-gradient(180deg, #7C9070 0%, #5A7050 100%)',
+            boxShadow: '0 0 20px rgba(124, 144, 112, 0.4), 0 0 40px rgba(124, 144, 112, 0.2)'
+          }}
+        >
+          Try Now →
+        </button>
+
+        {/* Footer Stats */}
+        <div className="flex items-center gap-4 sm:gap-8 mt-2 flex-wrap justify-center">
+          <span className="text-xs sm:text-sm text-white/40">200 AI agents</span>
+          <span className="text-xs sm:text-sm text-white/25 hidden sm:inline">•</span>
+          <span className="text-xs sm:text-sm text-white/40">Real personalities</span>
+          <span className="text-xs sm:text-sm text-white/25 hidden sm:inline">•</span>
+          <span className="text-xs sm:text-sm text-white/40">Instant feedback</span>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

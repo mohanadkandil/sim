@@ -84,7 +84,7 @@ export function LoopPanel({
         ) : (
           <span className="flex items-center justify-center gap-2">
             <LoopIcon />
-            Run Crucible Loop
+            Run Simuul Loop
           </span>
         )}
       </button>

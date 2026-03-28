@@ -13,7 +13,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Crucible | Staging Environment for Product Decisions",
+  title: "Simuul | Staging Environment for Product Decisions",
   description:
     "Put your roadmap through the fire. Test product decisions on your real user population before shipping.",
 };

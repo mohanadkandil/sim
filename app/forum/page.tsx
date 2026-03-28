@@ -1111,9 +1111,9 @@ export default function ForumPage() {
                             </p>
                           ) : (
                             <div className="space-y-4">
-                              {post.comments.map((comment) => (
+                              {post.comments.map((comment, idx) => (
                                 <CommentComponent
-                                  key={comment.id}
+                                  key={`${comment.id}-${idx}`}
                                   comment={comment}
                                 />
                               ))}
@@ -1296,8 +1296,8 @@ function CommentComponent({
 
         {comment.replies.length > 0 && (
           <div className="mt-3 space-y-3">
-            {comment.replies.map((reply) => (
-              <CommentComponent key={reply.id} comment={reply} depth={depth + 1} />
+            {comment.replies.map((reply, idx) => (
+              <CommentComponent key={`${reply.id}-${idx}`} comment={reply} depth={depth + 1} />
             ))}
           </div>
         )}
