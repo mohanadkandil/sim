@@ -2,29 +2,35 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Zap, Lightbulb, Users, Play } from "lucide-react";
+import { Zap, Lightbulb, Users, Play, Loader2 } from "lucide-react";
+
+const API_BASE = "http://localhost:5001/api/graph";
 
 const SUGGESTIONS = [
-  "Add AI copilot",
-  "Remove free tier",
-  "Redesign onboarding",
-  "Launch mobile app",
+  "Add AI copilot that helps users write better content",
+  "Remove free tier and convert to paid-only model",
+  "Redesign onboarding with interactive tutorials",
+  "Launch mobile app with offline support",
 ];
 
 export default function InputPage() {
   const router = useRouter();
   const [featureText, setFeatureText] = useState("");
   const [isRunning, setIsRunning] = useState(false);
+  const [status, setStatus] = useState("");
 
   const handleRun = async () => {
     if (!featureText.trim()) return;
 
     setIsRunning(true);
-    // Store the feature in sessionStorage for the output page
-    sessionStorage.setItem("agentsim_feature", featureText);
+    setStatus("Starting simulation...");
 
-    // Navigate to the thread simulation page
-    router.push("/thread");
+    // Store the feature text for the graph page to use
+    sessionStorage.setItem("crucible_feature_text", featureText);
+    sessionStorage.setItem("crucible_stream_mode", "true");
+
+    // Navigate immediately to graph page (MiroFish-style)
+    router.push("/graph");
   };
 
   const handleSuggestion = (suggestion: string) => {
@@ -57,9 +63,10 @@ export default function InputPage() {
           <textarea
             value={featureText}
             onChange={(e) => setFeatureText(e.target.value)}
-            className="w-full bg-background rounded-[12px] border border-border p-4 px-5 text-[15px] text-text-secondary leading-relaxed resize-none outline-none min-h-[80px] placeholder:text-text-secondary"
-            rows={3}
-            placeholder="We will add dark mode support with custom themes and a palette editor so users can personalize their workspace..."
+            className="w-full bg-background rounded-[12px] border border-border p-4 px-5 text-[15px] text-text leading-relaxed resize-none outline-none min-h-[100px] placeholder:text-text-secondary focus:border-sage transition-colors"
+            rows={4}
+            placeholder="Describe your feature idea in detail. For example: We will add an AI-powered export feature that automatically formats data for different platforms..."
+            disabled={isRunning}
           />
 
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -71,7 +78,7 @@ export default function InputPage() {
               </span>
               <span className="pill pill-curious">
                 <Users className="w-3 h-3 text-curious" />
-                30 agents ready
+                200 agents ready
               </span>
             </div>
 
@@ -81,24 +88,36 @@ export default function InputPage() {
               disabled={isRunning || !featureText.trim()}
               className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Play className="w-4 h-4" />
-              <span>{isRunning ? "Starting..." : "Run Simulation"}</span>
+              {isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{status || "Starting..."}</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  <span>Run Simulation</span>
+                </>
+              )}
             </button>
           </div>
         </div>
 
         {/* Suggestions */}
-        <div className="flex items-center gap-2 flex-wrap justify-center">
-          <span className="text-xs font-medium text-text-muted">Try:</span>
-          {SUGGESTIONS.map((suggestion) => (
-            <button
-              key={suggestion}
-              onClick={() => handleSuggestion(suggestion)}
-              className="inline-flex items-center rounded-[8px] px-3 py-1.5 border border-border bg-transparent text-xs text-text-secondary cursor-pointer whitespace-nowrap hover:bg-background transition-colors"
-            >
-              {suggestion}
-            </button>
-          ))}
+        <div className="flex flex-col items-center gap-3 w-full">
+          <span className="text-xs font-medium text-text-muted">Try an example:</span>
+          <div className="flex flex-wrap gap-2 justify-center">
+            {SUGGESTIONS.map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => handleSuggestion(suggestion)}
+                disabled={isRunning}
+                className="inline-flex items-center rounded-[8px] px-3 py-2 border border-border bg-transparent text-xs text-text-secondary cursor-pointer hover:bg-background hover:border-sage transition-colors disabled:opacity-50 max-w-[200px] text-left"
+              >
+                {suggestion.length > 40 ? suggestion.slice(0, 40) + "..." : suggestion}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
