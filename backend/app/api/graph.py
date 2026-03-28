@@ -902,6 +902,17 @@ def stream_build():
             all_agents = []  # Track all created agents for edge generation
             segment_agents = {seg: [] for seg in segments.keys()}  # Track agents by segment
 
+            # Load synthetic data for enrichment (Mixpanel-style traits)
+            from ..services.synthetic_data_loader import get_data_loader
+            try:
+                synthetic_loader = get_data_loader()
+                use_synthetic = True
+                logger.info("Synthetic data loaded - will enrich agents with realistic traits")
+            except FileNotFoundError:
+                synthetic_loader = None
+                use_synthetic = False
+                logger.info("Synthetic data not found - using default traits")
+
             for segment, count in segment_counts.items():
                 for i in range(count):
                     agent_num += 1
@@ -909,7 +920,7 @@ def stream_build():
                     # Progress (50% - 85%)
                     progress = 50 + int((agent_num / agent_count) * 35)
 
-                    # Get entity if available
+                    # Get entity if available (from Zep)
                     entity = None
                     if entity_pool:
                         entity = entity_pool.pop(0)
@@ -917,7 +928,7 @@ def stream_build():
                             entity_pool = list(entities)
                             random.shuffle(entity_pool)
 
-                    # Generate agent name
+                    # Generate agent name (prefer entity name if Person)
                     if entity and entity.get('name') and entity.get('entity_type') == 'Person':
                         name = entity['name']
                     else:
@@ -927,12 +938,37 @@ def stream_build():
                     name_hash = hashlib.md5(name.encode()).hexdigest()
                     avatar = f"https://api.dicebear.com/7.x/avataaars/svg?seed={name_hash}"
 
-                    # Generate traits based on segment
-                    traits = _get_segment_traits(segment)
-
                     agent_id = f"agent_{agent_num:03d}"
 
-                    # Create agent data
+                    # HYBRID APPROACH: Get realistic traits from synthetic data
+                    if use_synthetic and synthetic_loader:
+                        # Enrich with Mixpanel-style user data
+                        synthetic_traits = synthetic_loader.get_random_traits_for_segment(segment)
+                        bio = synthetic_traits.get('bio', '')
+                        status = synthetic_traits.get('status', '')
+                        traits = {
+                            'patience': synthetic_traits.get('patience', 0.5),
+                            'tech_level': synthetic_traits.get('tech_level', 0.5),
+                            'price_sensitivity': synthetic_traits.get('price_sensitivity', 0.5),
+                        }
+                        # Add extra behavioral data
+                        nps_score = synthetic_traits.get('nps_score', 5)
+                        tenure_months = synthetic_traits.get('tenure_months', 1)
+                        features_used = synthetic_traits.get('features_used', [])
+                        plan = synthetic_traits.get('plan', 'Free')
+                        churn_reason = synthetic_traits.get('churn_reason')
+                    else:
+                        # Fallback to basic traits
+                        traits = _get_segment_traits(segment)
+                        bio = f"A {segment.replace('_', ' ')} of the product"
+                        status = segment.replace('_', ' ').title()
+                        nps_score = 5
+                        tenure_months = 1
+                        features_used = []
+                        plan = 'Free'
+                        churn_reason = None
+
+                    # Create agent data with rich info from synthetic data
                     agent_data = {
                         "type": "agent",
                         "id": agent_id,
@@ -942,8 +978,14 @@ def stream_build():
                         "color": SEGMENT_COLORS.get(segment, '#8B5CF6'),
                         "entity_id": entity.get('uuid') if entity else None,
                         "entity_type": entity.get('entity_type', 'Person') if entity else 'Person',
-                        "summary": entity.get('summary', '') if entity else '',
+                        "bio": bio,
+                        "status": status,
                         "traits": traits,
+                        "nps_score": nps_score,
+                        "tenure_months": tenure_months,
+                        "features_used": features_used,
+                        "plan": plan,
+                        "churn_reason": churn_reason,
                         "progress": progress
                     }
 
@@ -1032,6 +1074,302 @@ def stream_build():
             'Access-Control-Allow-Origin': '*'
         }
     )
+
+
+@graph_bp.route('/stream-synthetic', methods=['POST'])
+def stream_synthetic():
+    """
+    SSE endpoint for fast agent generation using pre-generated synthetic data.
+    Much faster than stream-build as it doesn't need LLM/Zep calls.
+
+    Request (JSON):
+        {
+            "text": "Feature description...",
+            "agent_count": 50,
+            "segment_distribution": {"power_user": 0.2, "casual": 0.4, "new_user": 0.25, "churned": 0.15}
+        }
+
+    SSE Events:
+        - status: Progress updates
+        - agent: New agent streamed (one at a time)
+        - edge: Connection between agents
+        - complete: All agents streamed
+    """
+    from ..services.synthetic_data_loader import get_data_loader
+    import random
+
+    data = request.get_json() or {}
+    text = data.get('text', '')
+    agent_count = data.get('agent_count', 50)
+    segment_distribution = data.get('segment_distribution', {
+        'power_user': 0.20,
+        'casual': 0.40,
+        'new_user': 0.25,
+        'churned': 0.15
+    })
+
+    if not text:
+        return jsonify({"success": False, "error": "Text is required"}), 400
+
+    def generate():
+        try:
+            # Load synthetic data
+            loader = get_data_loader()
+            product_info = loader.product_info
+            product_name = product_info.get("name", "Lovable")
+
+            yield f"data: {json.dumps({'type': 'status', 'message': f'Loading {product_name} user data...', 'progress': 10})}\n\n"
+
+            # Get agents from synthetic data
+            agents = loader.get_agents(count=agent_count, segment_distribution=segment_distribution)
+
+            yield f"data: {json.dumps({'type': 'status', 'message': f'Found {len(agents)} users matching criteria', 'progress': 20})}\n\n"
+
+            # Create a pseudo graph_id for session tracking
+            import hashlib
+            graph_id = f"syn_{hashlib.md5(f'{text}{time.time()}'.encode()).hexdigest()[:10]}"
+
+            yield f"data: {json.dumps({'type': 'graph_created', 'graph_id': graph_id, 'progress': 25})}\n\n"
+
+            # Stream agents one by one with delays for visual effect
+            all_agent_ids = []
+            segment_agents = {}
+
+            for i, agent in enumerate(agents):
+                progress = 30 + int((i / len(agents)) * 60)
+
+                # Track by segment for edge generation
+                seg = agent['segment']
+                if seg not in segment_agents:
+                    segment_agents[seg] = []
+                segment_agents[seg].append(agent['id'])
+                all_agent_ids.append(agent['id'])
+
+                # Stream agent
+                agent_data = {
+                    'type': 'agent',
+                    'id': agent['id'],
+                    'name': agent['name'],
+                    'segment': agent['segment'],
+                    'color': agent['segment_color'],
+                    'bio': agent['bio'],
+                    'status': agent['status'],
+                    'location': agent.get('location', ''),
+                    'plan': agent.get('plan', 'Free'),
+                    'tenure_months': agent.get('tenure_months', 0),
+                    'nps_score': agent.get('nps_score', 5),
+                    'projects_created': agent.get('projects_created', 0),
+                    'churned': agent.get('churned', False),
+                    'sentiment': agent.get('sentiment', 'neutral'),
+                    'traits': {
+                        'patience': agent.get('patience', 0.5),
+                        'tech_level': agent.get('tech_level', 0.5),
+                        'price_sensitivity': agent.get('price_sensitivity', 0.5),
+                    },
+                    'features_used': agent.get('features_used', []),
+                    'progress': progress
+                }
+
+                yield f"data: {json.dumps(agent_data)}\n\n"
+
+                # Small delay for visual streaming effect
+                time.sleep(random.uniform(0.03, 0.08))
+
+            # Generate edges between agents in same segment
+            yield f"data: {json.dumps({'type': 'status', 'message': 'Creating connections...', 'progress': 92})}\n\n"
+
+            edge_count = 0
+            for segment, agent_ids in segment_agents.items():
+                # Connect some agents within same segment
+                if len(agent_ids) >= 2:
+                    # Create ~20% density of connections within segment
+                    num_edges = max(1, len(agent_ids) // 5)
+                    for _ in range(num_edges):
+                        a1, a2 = random.sample(agent_ids, 2)
+                        edge_data = {
+                            'type': 'edge',
+                            'source': a1,
+                            'target': a2,
+                            'relation': 'same_segment'
+                        }
+                        yield f"data: {json.dumps(edge_data)}\n\n"
+                        edge_count += 1
+
+            # Also create some cross-segment connections
+            for _ in range(agent_count // 10):
+                if len(all_agent_ids) >= 2:
+                    a1, a2 = random.sample(all_agent_ids, 2)
+                    edge_data = {
+                        'type': 'edge',
+                        'source': a1,
+                        'target': a2,
+                        'relation': 'interaction'
+                    }
+                    yield f"data: {json.dumps(edge_data)}\n\n"
+                    edge_count += 1
+
+            # Complete
+            summary = loader.get_segment_summary()
+            yield f"data: {json.dumps({'type': 'complete', 'graph_id': graph_id, 'agent_count': len(agents), 'edge_count': edge_count, 'summary': summary, 'progress': 100})}\n\n"
+
+        except FileNotFoundError as e:
+            logger.error(f"Synthetic data not found: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Synthetic data file not found. Run generate_synthetic_users.py first.'})}\n\n"
+        except Exception as e:
+            logger.error(f"Stream synthetic error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+            'Access-Control-Allow-Origin': '*'
+        }
+    )
+
+
+@graph_bp.route('/stream-reactions', methods=['POST'])
+def stream_reactions():
+    """
+    SSE endpoint to stream agent reactions to a feature.
+
+    Agents react one by one with sentiment and comments.
+
+    Request (JSON):
+        {
+            "feature": "Feature description...",
+            "agents": [{"id": "agent_001", "name": "Alex", "segment": "power_user", ...}]
+        }
+
+    SSE Events:
+        - reaction: Agent's reaction with sentiment and comment
+        - complete: All reactions done
+    """
+    from ..utils.llm_client import LLMClient
+
+    data = request.get_json() or {}
+    feature = data.get('feature', '')
+    agents_data = data.get('agents', [])
+
+    if not feature or not agents_data:
+        return jsonify({"success": False, "error": "Feature and agents required"}), 400
+
+    def generate():
+        try:
+            llm = LLMClient()
+
+            # Shuffle agents for natural feel
+            import random
+            shuffled_agents = list(agents_data)
+            random.shuffle(shuffled_agents)
+
+            # Only react with ~60% of agents for realism
+            active_count = max(5, int(len(shuffled_agents) * 0.6))
+            active_agents = shuffled_agents[:active_count]
+
+            yield f"data: {json.dumps({'type': 'status', 'message': f'Simulating {active_count} agent reactions...', 'total': active_count})}\n\n"
+
+            for i, agent in enumerate(active_agents):
+                try:
+                    # Build prompt based on agent persona
+                    segment = agent.get('segment', 'casual')
+                    traits = agent.get('traits', {})
+
+                    persona_desc = _build_persona_description(segment, traits)
+
+                    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of a software product.
+
+{persona_desc}
+
+A new feature is being proposed: "{feature}"
+
+React to this feature in ONE short sentence (max 15 words). Be authentic to your persona.
+Also indicate your sentiment: positive, negative, or neutral.
+
+Respond in this exact JSON format:
+{{"sentiment": "positive|negative|neutral", "comment": "Your reaction here"}}"""
+
+                    response = llm.generate(prompt, max_tokens=100)
+
+                    # Parse response
+                    try:
+                        # Extract JSON from response
+                        import re
+                        json_match = re.search(r'\{[^}]+\}', response)
+                        if json_match:
+                            reaction_data = json.loads(json_match.group())
+                            sentiment = reaction_data.get('sentiment', 'neutral')
+                            comment = reaction_data.get('comment', response[:100])
+                        else:
+                            sentiment = 'neutral'
+                            comment = response[:100]
+                    except:
+                        sentiment = 'neutral'
+                        comment = response[:100] if response else "Interesting..."
+
+                    # Stream reaction
+                    reaction = {
+                        "type": "reaction",
+                        "agent_id": agent.get('id'),
+                        "agent_name": agent.get('name'),
+                        "segment": segment,
+                        "color": agent.get('color', SEGMENT_COLORS.get(segment, '#8B5CF6')),
+                        "sentiment": sentiment,
+                        "comment": comment,
+                        "index": i + 1,
+                        "total": active_count
+                    }
+
+                    yield f"data: {json.dumps(reaction)}\n\n"
+
+                    # Random delay for natural feel
+                    time.sleep(random.uniform(0.3, 0.8))
+
+                except Exception as e:
+                    logger.warning(f"Agent reaction error: {e}")
+                    continue
+
+            # Complete
+            yield f"data: {json.dumps({'type': 'complete', 'total_reactions': active_count})}\n\n"
+
+        except Exception as e:
+            logger.error(f"Stream reactions error: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+            'Access-Control-Allow-Origin': '*'
+        }
+    )
+
+
+def _build_persona_description(segment: str, traits: dict) -> str:
+    """Build a persona description for the agent"""
+    descriptions = {
+        'power_user': "You're a power user who uses the product daily. You care about efficiency, advanced features, and API access. You're often impatient with bugs but loyal when things work well.",
+        'casual': "You're a casual user who uses the product occasionally. You want things simple and intuitive. You don't care about advanced features.",
+        'new_user': "You're new to the product and still learning. You're easily confused but optimistic. You appreciate helpful onboarding.",
+        'churned': "You're a former user who left due to frustration. You're skeptical of new features when existing issues aren't fixed. You might come back if core problems are solved."
+    }
+
+    base = descriptions.get(segment, descriptions['casual'])
+
+    if traits.get('patience') == 'low':
+        base += " You have little patience for bugs or complexity."
+    if traits.get('tech_level') == 'advanced':
+        base += " You're technically sophisticated and notice implementation details."
+    if traits.get('price_sensitivity') == 'high':
+        base += " You're very price-conscious and skeptical of paid features."
+
+    return base
 
 
 def _get_segment_traits(segment: str) -> dict:

@@ -104,7 +104,9 @@ B. **Specific types (8 types, designed based on text content)**:
 
 - Quantity: 6–10
 - Relationships should reflect real-world connections in social media interactions
+- **CRITICAL: Each edge type must have AT MOST 10 source_targets pairs** (system limit)
 - Ensure the source_targets in relationships cover the entity types you have defined
+- Prioritize the most important/common entity pair combinations only
 
 ### 3. Attribute Design
 
@@ -194,11 +196,11 @@ class OntologyGenerator:
             {"role": "user", "content": user_message}
         ]
         
-        # Call LLM
+        # Call LLM (use higher token limit for complex ontology)
         result = self.llm_client.chat_json(
             messages=messages,
             temperature=0.3,
-            max_tokens=4096
+            max_tokens=8192
         )
         
         # Validate and post-process
@@ -255,9 +257,53 @@ Based on the above content, design entity types and relationship types suitable 
         
         return message
     
+    def _to_pascal_case(self, name: str) -> str:
+        """Convert a string to PascalCase format for Zep compatibility"""
+        if not name:
+            return "Entity"
+
+        # Remove any non-alphanumeric characters except spaces and underscores
+        import re
+        # Replace underscores and hyphens with spaces
+        name = name.replace('_', ' ').replace('-', ' ')
+        # Remove any other non-alphanumeric characters (except spaces)
+        name = re.sub(r'[^a-zA-Z0-9\s]', '', name)
+        # Split by spaces and capitalize each word
+        words = name.split()
+        # Join and capitalize first letter of each word
+        result = ''.join(word.capitalize() for word in words if word)
+        # Ensure it starts with a letter
+        if result and not result[0].isalpha():
+            result = 'Entity' + result
+        return result or "Entity"
+
+    def _to_screaming_snake_case(self, name: str) -> str:
+        """Convert a string to SCREAMING_SNAKE_CASE format for Zep edge types"""
+        if not name:
+            return "RELATES_TO"
+
+        import re
+        # If already in SCREAMING_SNAKE_CASE, return as-is
+        if name.isupper() and '_' in name:
+            return name
+
+        # Replace hyphens and spaces with underscores
+        name = name.replace('-', '_').replace(' ', '_')
+        # Insert underscores before uppercase letters (for camelCase/PascalCase)
+        name = re.sub(r'([a-z])([A-Z])', r'\1_\2', name)
+        # Remove any non-alphanumeric characters except underscores
+        name = re.sub(r'[^a-zA-Z0-9_]', '', name)
+        # Convert to uppercase
+        result = name.upper()
+        # Remove consecutive underscores
+        result = re.sub(r'_+', '_', result)
+        # Strip leading/trailing underscores
+        result = result.strip('_')
+        return result or "RELATES_TO"
+
     def _validate_and_process(self, result: Dict[str, Any]) -> Dict[str, Any]:
         """Validate and post-process the result"""
-        
+
         # Ensure required fields exist
         if "entity_types" not in result:
             result["entity_types"] = []
@@ -265,9 +311,18 @@ Based on the above content, design entity types and relationship types suitable 
             result["edge_types"] = []
         if "analysis_summary" not in result:
             result["analysis_summary"] = ""
-        
-        # Validate entity types
+
+        # Build a mapping of original names to PascalCase names
+        name_mapping = {}
+
+        # Validate entity types and convert names to PascalCase
         for entity in result["entity_types"]:
+            original_name = entity.get("name", "Entity")
+            pascal_name = self._to_pascal_case(original_name)
+            name_mapping[original_name] = pascal_name
+            name_mapping[original_name.lower()] = pascal_name  # Also map lowercase
+            entity["name"] = pascal_name
+
             if "attributes" not in entity:
                 entity["attributes"] = []
             if "examples" not in entity:
@@ -275,15 +330,59 @@ Based on the above content, design entity types and relationship types suitable 
             # Ensure description does not exceed 100 characters
             if len(entity.get("description", "")) > 100:
                 entity["description"] = entity["description"][:97] + "..."
-        
+
+        # Get all valid entity names for validation
+        valid_entity_names = {e["name"] for e in result["entity_types"]}
+
         # Validate relationship types
         for edge in result["edge_types"]:
+            # Convert edge name to SCREAMING_SNAKE_CASE for Zep API compatibility
+            original_edge_name = edge.get("name", "RELATES_TO")
+            edge["name"] = self._to_screaming_snake_case(original_edge_name)
+
             if "source_targets" not in edge:
                 edge["source_targets"] = []
             if "attributes" not in edge:
                 edge["attributes"] = []
             if len(edge.get("description", "")) > 100:
                 edge["description"] = edge["description"][:97] + "..."
+
+            # Convert source and target to PascalCase and validate
+            valid_source_targets = []
+            for st in edge.get("source_targets", []):
+                source = st.get("source", "")
+                target = st.get("target", "")
+
+                # Try to map to known entity names first
+                if source in name_mapping:
+                    source = name_mapping[source]
+                elif source.lower() in name_mapping:
+                    source = name_mapping[source.lower()]
+                else:
+                    source = self._to_pascal_case(source)
+
+                if target in name_mapping:
+                    target = name_mapping[target]
+                elif target.lower() in name_mapping:
+                    target = name_mapping[target.lower()]
+                else:
+                    target = self._to_pascal_case(target)
+
+                # Only include if both source and target are valid entity types
+                if source in valid_entity_names and target in valid_entity_names:
+                    valid_source_targets.append({"source": source, "target": target})
+                elif source in valid_entity_names:
+                    # Target not found, use a fallback
+                    valid_source_targets.append({"source": source, "target": "Person"})
+                elif target in valid_entity_names:
+                    # Source not found, use a fallback
+                    valid_source_targets.append({"source": "Person", "target": target})
+
+            edge["source_targets"] = valid_source_targets
+
+            # Zep limit: max 10 source_targets per edge type
+            if len(edge["source_targets"]) > 10:
+                edge["source_targets"] = edge["source_targets"][:10]
         
         # Zep API limit: at most 10 custom entity types and 10 custom edge types
         MAX_ENTITY_TYPES = 10

@@ -7,6 +7,8 @@ export interface AgentNode {
   id: string;
   name: string;
   activity: string;
+  bio?: string;           // Rich persona description
+  status?: string;        // Status line (e.g., "Power user for 2 years")
   sentiment: 'positive' | 'negative' | 'neutral' | 'curious';
   location: string;
   color: string;
@@ -28,6 +30,8 @@ interface Props {
   nodes: AgentNode[];
   links: AgentLink[];
   onNodeClick?: (node: AgentNode) => void;
+  pulsingNodes?: Set<string>;
+  staticMode?: boolean; // If true, nodes don't move after initial layout
 }
 
 const LINK_COLORS: Record<string, string> = {
@@ -38,13 +42,55 @@ const LINK_COLORS: Record<string, string> = {
   social: '#C9C9C9',
 };
 
-export default function D3ForceGraph({ nodes, links, onNodeClick }: Props) {
+export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, staticMode = false }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const simulationRef = useRef<d3.Simulation<AgentNode, AgentLink> | null>(null);
   const gRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
   const nodeMapRef = useRef<Map<string, AgentNode>>(new Map());
   const initializedRef = useRef(false);
+
+  // Handle pulsing nodes
+  useEffect(() => {
+    if (!gRef.current || !pulsingNodes) return;
+
+    const g = gRef.current;
+
+    // Add/remove pulse class from nodes
+    g.select('.nodes')
+      .selectAll<SVGGElement, AgentNode>('g.node')
+      .each(function(d) {
+        const isPulsing = pulsingNodes.has(d.id);
+        const node = d3.select(this);
+
+        if (isPulsing) {
+          // Add pulse ring
+          if (node.select('.pulse-ring').empty()) {
+            node.insert('circle', ':first-child')
+              .attr('class', 'pulse-ring')
+              .attr('r', 30)
+              .attr('fill', 'none')
+              .attr('stroke', d.sentiment === 'positive' ? '#22C55E' :
+                             d.sentiment === 'negative' ? '#EF4444' : '#8B5CF6')
+              .attr('stroke-width', 3)
+              .attr('opacity', 0.8)
+              .transition()
+              .duration(1000)
+              .attr('r', 50)
+              .attr('opacity', 0)
+              .remove();
+
+            // Scale up the node briefly
+            node.transition()
+              .duration(200)
+              .attr('transform', `translate(${d.x || 0},${d.y || 0}) scale(1.2)`)
+              .transition()
+              .duration(300)
+              .attr('transform', `translate(${d.x || 0},${d.y || 0}) scale(1)`);
+          }
+        }
+      });
+  }, [pulsingNodes]);
 
   // Initialize the SVG and simulation once
   const initializeGraph = useCallback(() => {
@@ -278,32 +324,51 @@ export default function D3ForceGraph({ nodes, links, onNodeClick }: Props) {
 
     allNodes.call(d3.drag<SVGGElement, AgentNode>()
       .on('start', (event, d) => {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!staticMode && !event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
       })
       .on('drag', (event, d) => {
         d.fx = event.x;
         d.fy = event.y;
+        if (staticMode) {
+          d.x = event.x;
+          d.y = event.y;
+          updatePositions();
+        }
       })
       .on('end', (event, d) => {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
+        if (!staticMode) {
+          if (!event.active) simulation.alphaTarget(0);
+          d.fx = null;
+          d.fy = null;
+        }
+        // In static mode, keep nodes fixed at their new positions
       }));
 
     // Apply mouse events to all nodes
     allNodes
       .on('mouseover', function(event, d) {
         d3.select(this).select('circle').attr('stroke', '#7C9070').attr('stroke-width', 3);
+
+        // Build tooltip with rich persona info
+        const statusHtml = d.status ? `<div style="font-size: 10px; color: #8B5CF6; margin-bottom: 4px;">${d.status}</div>` : '';
+        const bioHtml = d.bio ? `<div style="font-size: 11px; color: #4B4B4B; line-height: 1.4;">${d.bio}</div>` :
+                                `<div style="font-size: 11px; color: #6B6B6B;">${d.activity || d.location}</div>`;
+        const segmentHtml = `<div style="font-size: 10px; color: #8E8E93; margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: ${d.color};"></span>
+          ${d.location}
+        </div>`;
+
         tooltip
           .style('opacity', 1)
           .style('left', `${event.pageX + 10}px`)
           .style('top', `${event.pageY - 10}px`)
           .html(`
-            <div style="font-weight: 600; margin-bottom: 4px;">${d.name}</div>
-            <div style="font-size: 11px; color: #6B6B6B;">${d.activity || d.location}</div>
-            <div style="font-size: 10px; color: #8E8E93; margin-top: 4px;">${d.location}</div>
+            <div style="font-weight: 600; margin-bottom: 6px; font-size: 13px;">${d.name}</div>
+            ${statusHtml}
+            ${bioHtml}
+            ${segmentHtml}
           `);
       })
       .on('mousemove', function(event) {
@@ -322,9 +387,23 @@ export default function D3ForceGraph({ nodes, links, onNodeClick }: Props) {
       });
 
     // Restart simulation with some energy
-    simulation.alpha(0.3).restart();
+    if (staticMode) {
+      // In static mode, let nodes settle naturally then stop
+      simulation.alpha(0.8).restart();
+      setTimeout(() => {
+        simulation.stop();
+        // Fix all node positions after settling
+        updatedNodes.forEach(n => {
+          n.fx = n.x;
+          n.fy = n.y;
+        });
+        updatePositions();
+      }, 2000);
+    } else {
+      simulation.alpha(0.3).restart();
+    }
 
-  }, [nodes, links, onNodeClick, initializeGraph, updatePositions]);
+  }, [nodes, links, onNodeClick, initializeGraph, updatePositions, staticMode]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -339,8 +418,8 @@ export default function D3ForceGraph({ nodes, links, onNodeClick }: Props) {
       <svg ref={svgRef} className="w-full h-full" />
       <div
         ref={tooltipRef}
-        className="fixed pointer-events-none bg-white rounded-lg shadow-lg border border-[#F0EFEC] px-3 py-2 z-50 opacity-0 transition-opacity"
-        style={{ maxWidth: '200px' }}
+        className="fixed pointer-events-none bg-white rounded-lg shadow-lg border border-[#F0EFEC] px-4 py-3 z-50 opacity-0 transition-opacity"
+        style={{ maxWidth: '280px' }}
       />
     </div>
   );

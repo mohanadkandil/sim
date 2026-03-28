@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import TopNav from "@/components/TopNav";
 import D3ForceGraph from "@/components/graph/D3ForceGraph";
 import { Upload, Loader2, RefreshCw, Play, Users, MessageSquare, Sparkles } from "lucide-react";
-import { generateAgents, ForumAgent, SEGMENT_COLORS } from "@/lib/forum-api";
+import { generateAgents, ForumAgent, SEGMENT_COLORS, createTopicWithPost, streamLiveSimulation, LiveSimulationEvent } from "@/lib/forum-api";
 
 const API_BASE = "http://localhost:5001/api/graph";
 
@@ -33,6 +33,8 @@ interface GraphNode {
   id: string;
   name: string;
   activity: string;
+  bio?: string;
+  status?: string;
   sentiment: "positive" | "negative" | "neutral" | "curious";
   location: string;
   color: string;
@@ -78,13 +80,232 @@ export default function GraphPage() {
   const broadcastChannel = useRef<BroadcastChannel | null>(null);
   const [activeNodes, setActiveNodes] = useState<Set<string>>(new Set());
 
+  // Simulation state
+  const [featureText, setFeatureText] = useState("");
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simStatus, setSimStatus] = useState("");
+  const [reactions, setReactions] = useState<Array<{
+    agent_id: string;
+    agent_name: string;
+    segment: string;
+    color: string;
+    sentiment: string;
+    comment: string;
+    bio?: string;
+    status?: string;
+  }>>([]);
+  const [pulsingNodes, setPulsingNodes] = useState<Set<string>>(new Set());
+  const activityFeedRef = useRef<HTMLDivElement>(null);
+
+  // Forum topic state
+  const [topicId, setTopicId] = useState<string | null>(null);
+  const [postId, setPostId] = useState<string | null>(null);
+  const [topicTitle, setTopicTitle] = useState<string>("");
+  const [creatingTopic, setCreatingTopic] = useState(false);
+
+  // Live forum simulation state
+  const [forumSimulating, setForumSimulating] = useState(false);
+  const [forumEvents, setForumEvents] = useState<LiveSimulationEvent[]>([]);
+  const [forumStats, setForumStats] = useState({ comments: 0, replies: 0, upvotes: 0 });
+  const cleanupForumSim = useRef<(() => void) | null>(null);
+
+  // Start simulation with reactions
+  const startSimulation = useCallback(async (feature: string, agentsList: ForumAgent[]) => {
+    if (!feature || agentsList.length === 0) return;
+
+    setIsSimulating(true);
+    setSimStatus("Starting simulation...");
+    setReactions([]);
+
+    try {
+      const response = await fetch(`${API_BASE}/stream-reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          feature: feature,
+          agents: agentsList.map(a => ({
+            id: a.id,
+            name: a.name,
+            segment: a.segment,
+            color: a.segment_color,
+            traits: {
+              patience: a.patience,
+              tech_level: a.tech_level,
+              price_sensitivity: a.price_sensitivity,
+            }
+          }))
+        }),
+      });
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) throw new Error("No reader");
+
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+
+              if (data.type === "status") {
+                setSimStatus(data.message);
+              } else if (data.type === "reaction") {
+                // Add reaction to feed
+                setReactions(prev => [...prev, {
+                  agent_id: data.agent_id,
+                  agent_name: data.agent_name,
+                  segment: data.segment,
+                  color: data.color,
+                  sentiment: data.sentiment,
+                  comment: data.comment,
+                }]);
+
+                // Make node pulse
+                setPulsingNodes(prev => new Set(prev).add(data.agent_id));
+                setTimeout(() => {
+                  setPulsingNodes(prev => {
+                    const next = new Set(prev);
+                    next.delete(data.agent_id);
+                    return next;
+                  });
+                }, 1500);
+
+                // Update node sentiment
+                setNodes(prev => prev.map(n =>
+                  n.id === data.agent_id
+                    ? { ...n, sentiment: data.sentiment as "positive" | "negative" | "neutral" }
+                    : n
+                ));
+
+                // Scroll activity feed
+                setTimeout(() => {
+                  activityFeedRef.current?.scrollTo({
+                    top: activityFeedRef.current.scrollHeight,
+                    behavior: 'smooth'
+                  });
+                }, 50);
+
+                setSimStatus(`${data.index}/${data.total} reactions`);
+              } else if (data.type === "complete") {
+                setSimStatus(`Complete: ${data.total_reactions} reactions`);
+                setIsSimulating(false);
+
+                // Create forum topic automatically after simulation completes
+                if (feature && agentsList.length > 0 && !topicId) {
+                  setCreatingTopic(true);
+                  createTopicWithPost(feature, sessionStorage.getItem("crucible_graph_id") || undefined, agentsList)
+                    .then((result) => {
+                      if (result.success && result.topic && result.post) {
+                        setTopicId(result.topic.id);
+                        setPostId(result.post.id);
+                        setTopicTitle(result.topic.name);
+                        // Store for forum page
+                        sessionStorage.setItem("crucible_topic_id", result.topic.id);
+                        sessionStorage.setItem("crucible_topic", JSON.stringify(result.topic));
+                        sessionStorage.setItem("crucible_post", JSON.stringify(result.post));
+
+                        // START LIVE FORUM SIMULATION immediately!
+                        setForumSimulating(true);
+                        setForumEvents([]);
+
+                        cleanupForumSim.current = streamLiveSimulation(
+                          result.topic.id,
+                          result.post.id,
+                          result.post.content,
+                          result.post.title,
+                          agentsList,
+                          {
+                            rounds: 40,
+                            delayMs: 1000,
+                            onEvent: (event) => {
+                              // Store events for forum page
+                              setForumEvents(prev => [...prev, event]);
+
+                              // Update stats
+                              if (event.type === 'comment') {
+                                setForumStats(prev => ({ ...prev, comments: prev.comments + 1 }));
+                                // Make node pulse
+                                if (event.agent_id) {
+                                  setPulsingNodes(prev => new Set(prev).add(event.agent_id!));
+                                  setTimeout(() => {
+                                    setPulsingNodes(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(event.agent_id!);
+                                      return next;
+                                    });
+                                  }, 1500);
+                                }
+                              } else if (event.type === 'reply') {
+                                setForumStats(prev => ({ ...prev, replies: prev.replies + 1 }));
+                                if (event.agent_id) {
+                                  setPulsingNodes(prev => new Set(prev).add(event.agent_id!));
+                                  setTimeout(() => {
+                                    setPulsingNodes(prev => {
+                                      const next = new Set(prev);
+                                      next.delete(event.agent_id!);
+                                      return next;
+                                    });
+                                  }, 1500);
+                                }
+                              } else if (event.type === 'vote') {
+                                setForumStats(prev => ({ ...prev, upvotes: prev.upvotes + 1 }));
+                              }
+
+                              // Store events in sessionStorage for forum page
+                              const storedEvents = JSON.parse(sessionStorage.getItem("crucible_forum_events") || "[]");
+                              storedEvents.push(event);
+                              sessionStorage.setItem("crucible_forum_events", JSON.stringify(storedEvents.slice(-100)));
+                            },
+                            onComplete: (stats, adoptionScore) => {
+                              setForumSimulating(false);
+                              sessionStorage.setItem("crucible_forum_complete", "true");
+                              sessionStorage.setItem("crucible_adoption_score", String(adoptionScore));
+                            },
+                            onError: (err) => {
+                              console.error("Forum simulation error:", err);
+                              setForumSimulating(false);
+                            }
+                          }
+                        );
+                      }
+                    })
+                    .finally(() => setCreatingTopic(false));
+                }
+              } else if (data.type === "error") {
+                setError(data.message);
+                setIsSimulating(false);
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Simulation error:", err);
+      setIsSimulating(false);
+    }
+  }, []);
+
   // Start streaming build via SSE
-  const startStreamingBuild = useCallback((featureText: string) => {
+  const startStreamingBuild = useCallback((inputFeatureText: string) => {
+    setFeatureText(inputFeatureText); // Store for simulation
     setIsStreaming(true);
     setStreamStatus("Connecting...");
     setStreamProgress(0);
     setNodes([]);
     setLinks([]);
+    setReactions([]); // Clear previous reactions
 
     // Use fetch with POST for SSE (EventSource doesn't support POST)
     const startStream = async () => {
@@ -93,9 +314,9 @@ export default function GraphPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            text: featureText,
-            project_name: featureText.slice(0, 50),
-            simulation_requirement: `Simulate how users would react to this feature: ${featureText}`,
+            text: inputFeatureText,
+            project_name: inputFeatureText.slice(0, 50),
+            simulation_requirement: `Simulate how users would react to this feature: ${inputFeatureText}`,
           }),
         });
 
@@ -173,7 +394,9 @@ export default function GraphPage() {
             {
               id: data.id,
               name: data.name,
-              activity: data.summary || `${data.segment.replace('_', ' ')} - ${data.traits?.tech_level || 'user'}`,
+              activity: data.status || `${data.segment.replace('_', ' ')}`,
+              bio: data.bio,
+              status: data.status,
               sentiment: data.segment === 'churned' ? 'negative' as const :
                         data.segment === 'power_user' ? 'positive' as const :
                         data.segment === 'new_user' ? 'curious' as const : 'neutral' as const,
@@ -193,7 +416,9 @@ export default function GraphPage() {
           segment_color: data.color,
           entity_id: data.entity_id,
           entity_type: data.entity_type,
-          entity_summary: data.summary,
+          entity_summary: data.bio || data.status || '',
+          bio: data.bio,
+          status: data.status,
           ...data.traits
         };
         streamedAgentsRef.current.push(newAgent);
@@ -233,13 +458,9 @@ export default function GraphPage() {
         sessionStorage.setItem("crucible_agents", JSON.stringify(streamedAgentsRef.current));
         if (data.graph_id) {
           sessionStorage.setItem("crucible_graph_id", data.graph_id);
+          // Navigate to the persistent graph URL
+          router.push(`/graph/${data.graph_id}`);
         }
-
-        // Update state with all agents
-        setAgents(streamedAgentsRef.current);
-
-        // Refresh projects list
-        fetchProjects();
         break;
 
       case "error":
@@ -258,9 +479,8 @@ export default function GraphPage() {
     const featureText = sessionStorage.getItem("crucible_feature_text");
 
     if (streamMode === "true" && featureText) {
-      // Clear session storage
+      // Clear stream mode flag only - keep feature_text for the dynamic graph page
       sessionStorage.removeItem("crucible_stream_mode");
-      sessionStorage.removeItem("crucible_feature_text");
 
       // Start streaming build
       startStreamingBuild(featureText);
@@ -280,6 +500,7 @@ export default function GraphPage() {
     // Cleanup on unmount
     return () => {
       eventSourceRef.current?.close();
+      cleanupForumSim.current?.();
     };
   }, [startStreamingBuild]);
 
@@ -517,7 +738,7 @@ export default function GraphPage() {
   // Navigate to forum
   const goToForum = () => {
     if (agents.length > 0) {
-      router.push("/forum");
+      router.push(topicId ? `/forum/${topicId}` : "/forum");
     }
   };
 
@@ -786,6 +1007,7 @@ export default function GraphPage() {
               nodes={nodes}
               links={links}
               onNodeClick={(node) => setSelectedNode(node)}
+              pulsingNodes={pulsingNodes}
             />
           ) : !isStreaming ? (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -825,32 +1047,270 @@ export default function GraphPage() {
           {nodes.length > 0 && (
             <div className="absolute bottom-4 left-4 bg-white rounded-lg border border-[#F0EFEC] shadow-sm p-4">
               <div className="text-[11px] font-semibold text-[#8E8E93] mb-2">
-                ENTITY TYPES
+                AGENT SEGMENTS
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#8B5CF6" }} />
-                  <span className="text-[11px] text-[#6B6B6B]">Segment</span>
+                  <span className="text-[11px] text-[#6B6B6B]">Power User</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#7C9070" }} />
-                  <span className="text-[11px] text-[#6B6B6B]">User</span>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#22C55E" }} />
+                  <span className="text-[11px] text-[#6B6B6B]">Casual</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#5B9BD5" }} />
-                  <span className="text-[11px] text-[#6B6B6B]">Feature</span>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#FBBF24" }} />
+                  <span className="text-[11px] text-[#6B6B6B]">New User</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#EF4444" }} />
-                  <span className="text-[11px] text-[#6B6B6B]">Pain Point</span>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#F97316" }} />
+                  <span className="text-[11px] text-[#6B6B6B]">Churned</span>
+                </div>
+              </div>
+              {/* Sentiment Legend */}
+              <div className="text-[11px] font-semibold text-[#8E8E93] mt-3 mb-2">
+                SENTIMENT
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                  <span className="text-[11px] text-[#6B6B6B]">Positive</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                  <span className="text-[11px] text-[#6B6B6B]">Negative</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#9B8AA8]" />
+                  <span className="text-[11px] text-[#6B6B6B]">Neutral</span>
                 </div>
               </div>
             </div>
           )}
         </div>
 
+        {/* Activity Feed Sidebar */}
+        {(reactions.length > 0 || isSimulating || forumSimulating || forumEvents.length > 0) && (
+          <div className="w-[320px] bg-white border-l border-[#F0EFEC] flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-[#F0EFEC]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-[#8B5CF6]" />
+                  <span className="text-sm font-semibold text-[#2D2D2D]">
+                    {forumSimulating ? 'Live Forum' : 'Live Reactions'}
+                  </span>
+                </div>
+                {(isSimulating || forumSimulating) && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 bg-[#22C55E] rounded-full animate-pulse" />
+                    <span className="text-[10px] text-[#8E8E93]">
+                      {forumSimulating ? `${forumStats.comments} comments` : simStatus}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {featureText && (
+                <div className="mt-2 p-2 bg-[#F7F6F3] rounded-lg">
+                  <div className="text-[10px] text-[#8E8E93] mb-1">FEATURE:</div>
+                  <p className="text-xs text-[#2D2D2D] line-clamp-2">{featureText}</p>
+                </div>
+              )}
+              {forumSimulating && topicTitle && (
+                <div className="mt-2 p-2 bg-[#E8F5E9] rounded-lg">
+                  <div className="text-[10px] text-[#4A5D43] mb-1">SUBREDDIT:</div>
+                  <p className="text-xs font-medium text-[#2D2D2D]">r/{topicTitle.replace(/\s+/g, '')}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Reactions List */}
+            <div
+              ref={activityFeedRef}
+              className="flex-1 overflow-y-auto p-3 space-y-2"
+            >
+              {reactions.map((reaction, i) => {
+                // Find agent to get rich data
+                const agent = agents.find(a => a.id === reaction.agent_id);
+                const agentStatus = agent?.status || reaction.segment.replace('_', ' ');
+                const agentBio = agent?.bio;
+
+                return (
+                  <div
+                    key={i}
+                    className="p-3 rounded-lg bg-[#FAFAF8] border border-[#F0EFEC] animate-in slide-in-from-right duration-300"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0"
+                        style={{ backgroundColor: reaction.color }}
+                      >
+                        {reaction.agent_name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-semibold text-[#2D2D2D] truncate">
+                          {reaction.agent_name}
+                        </div>
+                        <div className="text-[10px] text-[#8B5CF6] truncate">
+                          {agentStatus}
+                        </div>
+                      </div>
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                          reaction.sentiment === 'positive' ? 'bg-[#22C55E]' :
+                          reaction.sentiment === 'negative' ? 'bg-[#EF4444]' :
+                          'bg-[#9B8AA8]'
+                        }`}
+                      />
+                    </div>
+                    <p className="text-sm text-[#2D2D2D] leading-relaxed mb-1">
+                      "{reaction.comment}"
+                    </p>
+                    {agentBio && (
+                      <p className="text-[10px] text-[#8E8E93] line-clamp-2 mt-1">
+                        {agentBio}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+
+              {reactions.length === 0 && isSimulating && (
+                <div className="flex items-center justify-center h-32 text-[#8E8E93] text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Waiting for reactions...
+                </div>
+              )}
+
+              {/* Forum Events */}
+              {forumEvents.filter(e => e.type === 'comment' || e.type === 'reply').map((event, i) => (
+                <div
+                  key={`forum-${i}`}
+                  className="p-3 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] animate-in slide-in-from-right duration-300"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-semibold flex-shrink-0"
+                      style={{ backgroundColor: event.segment_color || '#8B5CF6' }}
+                    >
+                      {event.agent_name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-[#2D2D2D] truncate">
+                        {event.agent_name}
+                      </div>
+                      <div className="text-[10px] text-[#22C55E]">
+                        {event.type === 'reply' ? `↩️ replying to ${event.parent_author}` : '💬 commenting'}
+                      </div>
+                    </div>
+                    <div
+                      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${
+                        event.sentiment === 'positive' ? 'bg-[#22C55E]' :
+                        event.sentiment === 'negative' ? 'bg-[#EF4444]' :
+                        'bg-[#9B8AA8]'
+                      }`}
+                    />
+                  </div>
+                  <p className="text-sm text-[#2D2D2D] leading-relaxed">
+                    "{event.content}"
+                  </p>
+                </div>
+              ))}
+
+              {forumEvents.length === 0 && forumSimulating && (
+                <div className="flex items-center justify-center h-32 text-[#8E8E93] text-sm">
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Agents are discussing...
+                </div>
+              )}
+            </div>
+
+            {/* Summary Stats */}
+            {(reactions.length > 0 || forumEvents.length > 0) && (
+              <div className="p-3 border-t border-[#F0EFEC] bg-[#FAFAF8]">
+                {/* Reaction stats */}
+                {reactions.length > 0 && (
+                  <div className="flex justify-between text-[11px] mb-2">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-[#22C55E]" />
+                      <span className="text-[#6B6B6B]">
+                        {reactions.filter(r => r.sentiment === 'positive').length} positive
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-[#EF4444]" />
+                      <span className="text-[#6B6B6B]">
+                        {reactions.filter(r => r.sentiment === 'negative').length} negative
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-[#9B8AA8]" />
+                      <span className="text-[#6B6B6B]">
+                        {reactions.filter(r => r.sentiment === 'neutral').length} neutral
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {/* Forum stats */}
+                {forumEvents.length > 0 && (
+                  <div className="flex justify-between text-[11px]">
+                    <span className="text-[#6B6B6B]">💬 {forumStats.comments} comments</span>
+                    <span className="text-[#6B6B6B]">↩️ {forumStats.replies} replies</span>
+                    <span className="text-[#6B6B6B]">👍 {forumStats.upvotes} votes</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Go to Forum Button */}
+            {!isSimulating && (reactions.length > 0 || forumEvents.length > 0) && (
+              <div className="p-3 border-t border-[#F0EFEC]">
+                {creatingTopic ? (
+                  <div className="flex items-center justify-center gap-2 text-[#8E8E93] py-2.5">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">Creating subreddit...</span>
+                  </div>
+                ) : topicId ? (
+                  <div className="space-y-2">
+                    <div className="text-center">
+                      <div className="text-[10px] text-[#8E8E93]">
+                        {forumSimulating ? 'LIVE DISCUSSION' : 'SUBREDDIT READY'}
+                      </div>
+                      <div className="text-sm font-medium text-[#2D2D2D]">r/{topicTitle.replace(/\s+/g, '')}</div>
+                      {forumSimulating && (
+                        <div className="text-[10px] text-[#22C55E] mt-1 animate-pulse">
+                          {forumStats.comments + forumStats.replies} interactions happening...
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => router.push(`/forum/${topicId}`)}
+                      className={`w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition-colors ${
+                        forumSimulating
+                          ? 'bg-[#22C55E] text-white hover:bg-[#16A34A]'
+                          : 'bg-[#7C9070] text-white hover:bg-[#6A7D60]'
+                      }`}
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      {forumSimulating ? 'Watch Live Discussion' : 'Open Subreddit'}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => router.push(topicId ? `/forum/${topicId}` : '/forum')}
+                    className="w-full flex items-center justify-center gap-2 bg-[#7C9070] text-white rounded-lg py-2.5 text-sm font-medium hover:bg-[#6A7D60] transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Continue in Forum
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Node Details Sidebar */}
-        {selectedNode && (
+        {selectedNode && !(reactions.length > 0 || isSimulating) && (
           <div className="w-[300px] bg-white border-l border-[#F0EFEC] p-5 overflow-y-auto">
             <div className="flex items-start justify-between mb-4">
               <div>
@@ -871,12 +1331,17 @@ export default function GraphPage() {
               </button>
             </div>
 
-            {selectedNode.activity && (
+            {(selectedNode.bio || selectedNode.activity) && (
               <div className="bg-[#F7F6F3] rounded-lg p-3 mb-4">
+                {selectedNode.status && (
+                  <div className="text-[10px] font-medium text-[#8B5CF6] mb-2">
+                    {selectedNode.status}
+                  </div>
+                )}
                 <div className="text-[11px] font-semibold text-[#8E8E93] mb-1">
-                  SUMMARY
+                  ABOUT
                 </div>
-                <p className="text-sm text-[#2D2D2D]">{selectedNode.activity}</p>
+                <p className="text-sm text-[#2D2D2D]">{selectedNode.bio || selectedNode.activity}</p>
               </div>
             )}
 

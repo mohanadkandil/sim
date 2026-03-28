@@ -29,7 +29,7 @@ export default function InputPage() {
     sessionStorage.setItem("crucible_feature_text", featureText);
     sessionStorage.setItem("crucible_stream_mode", "true");
 
-    // Navigate immediately to graph page (MiroFish-style)
+    // Navigate immediately to graph page to see agents populate in real-time
     router.push("/graph");
   };
 

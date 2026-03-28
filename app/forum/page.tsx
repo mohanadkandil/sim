@@ -24,6 +24,10 @@ import {
   createTopic,
   createPost,
   simulateResponses,
+  streamInteraction,
+  streamLiveSimulation,
+  LiveSimulationEvent,
+  getSimulationState,
   listTopics,
   SEGMENT_COLORS,
   SEGMENT_LABELS,
@@ -94,10 +98,14 @@ export default function ForumPage() {
   useEffect(() => {
     const storedAgents = sessionStorage.getItem("crucible_agents");
     const storedGraphId = sessionStorage.getItem("crucible_graph_id");
+    const storedTopic = sessionStorage.getItem("crucible_topic");
+    const storedPost = sessionStorage.getItem("crucible_post");
+    const storedForumEvents = sessionStorage.getItem("crucible_forum_events");
 
     if (storedAgents) {
       try {
-        setAgents(JSON.parse(storedAgents));
+        const parsedAgents = JSON.parse(storedAgents);
+        setAgents(parsedAgents);
       } catch (e) {
         console.error("Failed to parse agents:", e);
       }
@@ -106,6 +114,126 @@ export default function ForumPage() {
     if (storedGraphId) {
       setGraphId(storedGraphId);
       loadTopics(storedGraphId);
+    } else {
+      // Load all topics when no graphId is available
+      loadTopics();
+    }
+
+    // Load topic and post from graph page
+    if (storedTopic && storedPost) {
+      try {
+        const topic = JSON.parse(storedTopic);
+        const post = JSON.parse(storedPost);
+
+        // Add topic to list and select it
+        setTopics((prev) => {
+          if (prev.some(t => t.id === topic.id)) {
+            return prev;
+          }
+          return [topic, ...prev];
+        });
+        setSelectedTopic(topic);
+
+        // Create local post
+        const localPost: LocalPost = {
+          id: post.id,
+          topic_id: post.topic_id,
+          subreddit: topic.subreddit?.replace("r/", "") || topic.name.replace(/\s+/g, ''),
+          authorId: "pm",
+          authorName: post.author || "Product Team",
+          avatar: "PT",
+          title: post.title,
+          content: post.content,
+          upvotes: post.upvotes || 1,
+          downvotes: post.downvotes || 0,
+          commentCount: 0,
+          timestamp: "just now",
+          comments: [],
+          flair: "Feature Proposal",
+        };
+
+        // Load existing forum events from sessionStorage
+        if (storedForumEvents) {
+          try {
+            const events: LiveSimulationEvent[] = JSON.parse(storedForumEvents);
+            const comments: LocalComment[] = [];
+            const replies: { parentId: string; reply: LocalComment }[] = [];
+
+            events.forEach((event) => {
+              if (event.type === 'comment' && event.content) {
+                comments.push({
+                  id: event.id || `comment_${Math.random().toString(36).slice(2)}`,
+                  authorId: event.agent_id || '',
+                  authorName: event.agent_name || 'Unknown',
+                  avatar: event.agent_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??',
+                  segment: event.segment || 'casual',
+                  content: event.content,
+                  upvotes: Math.floor(Math.random() * 20) + 1,
+                  downvotes: Math.floor(Math.random() * 5),
+                  sentiment: (event.sentiment as "positive" | "neutral" | "negative") || 'neutral',
+                  timestamp: 'just now',
+                  replies: [],
+                });
+              } else if (event.type === 'reply' && event.content && event.parent_id) {
+                replies.push({
+                  parentId: event.parent_id,
+                  reply: {
+                    id: event.id || `reply_${Math.random().toString(36).slice(2)}`,
+                    authorId: event.agent_id || '',
+                    authorName: event.agent_name || 'Unknown',
+                    avatar: event.agent_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '??',
+                    segment: event.segment || 'casual',
+                    content: event.content,
+                    upvotes: Math.floor(Math.random() * 10) + 1,
+                    downvotes: Math.floor(Math.random() * 2),
+                    sentiment: (event.sentiment as "positive" | "neutral" | "negative") || 'neutral',
+                    timestamp: 'just now',
+                    replies: [],
+                  }
+                });
+              }
+            });
+
+            // Attach replies to parent comments
+            replies.forEach(({ parentId, reply }) => {
+              const parent = comments.find(c => c.id === parentId);
+              if (parent) {
+                parent.replies.push(reply);
+              }
+            });
+
+            localPost.comments = comments;
+            localPost.commentCount = comments.length + replies.length;
+
+            // Update stats
+            const positiveCount = events.filter(e => e.sentiment === 'positive').length;
+            const negativeCount = events.filter(e => e.sentiment === 'negative').length;
+            const neutralCount = events.filter(e => e.sentiment === 'neutral').length;
+            setStats({
+              totalComments: comments.length + replies.length,
+              positiveCount,
+              negativeCount,
+              neutralCount,
+            });
+
+            // Clear stored events
+            sessionStorage.removeItem("crucible_forum_events");
+          } catch (e) {
+            console.error("Failed to parse forum events:", e);
+          }
+        }
+
+        setPosts([localPost]);
+        setExpandedPost(localPost.id);
+
+        // Clear session storage to prevent reload
+        sessionStorage.removeItem("crucible_topic");
+        sessionStorage.removeItem("crucible_post");
+        sessionStorage.removeItem("crucible_forum_events");
+        sessionStorage.removeItem("crucible_forum_complete");
+      } catch (e) {
+        console.error("Failed to parse topic/post:", e);
+      }
     }
 
     broadcastChannel.current = new BroadcastChannel("crucible_sync");
@@ -116,7 +244,34 @@ export default function ForumPage() {
     };
   }, []);
 
-  const loadTopics = async (gId: string) => {
+  // Auto-start simulation when agents and posts are ready
+  useEffect(() => {
+    // Need agents and at least one post to simulate
+    if (agents.length === 0 || posts.length === 0) return;
+
+    // Don't start if already simulating
+    if (isSimulating) return;
+
+    // Check if this post has no comments yet - means we should start simulation
+    const firstPost = posts[0];
+    if (firstPost && firstPost.comments.length === 0) {
+      console.log("Auto-starting simulation for post:", firstPost.id);
+
+      // Small delay to let UI render first
+      const timer = setTimeout(() => {
+        startLiveSimulation(
+          firstPost.topic_id,
+          firstPost.id,
+          firstPost.content,
+          firstPost.title
+        );
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [agents, posts, isSimulating]);
+
+  const loadTopics = async (gId?: string) => {
     const result = await listTopics(gId);
     if (result.success) {
       setTopics(result.topics);
@@ -173,89 +328,420 @@ export default function ForumPage() {
       setNewPostContent("");
       setShowNewPost(false);
 
-      startSimulation(selectedTopic.id, result.post.id);
+      // Start live simulation with agent tools
+      startLiveSimulation(selectedTopic.id, result.post.id, result.post.content, result.post.title);
     }
 
     setCreatingPost(false);
   };
 
-  const startSimulation = (topicId: string, postId: string) => {
+  // Start simulation with content passed directly (for auto-start from graph page)
+  const startSimulationWithContent = (topicId: string, postId: string, postContent: string) => {
     setIsSimulating(true);
     cleanupSSE.current?.();
 
-    cleanupSSE.current = simulateResponses(
+    console.log(`Starting simulation: ${agents.length} agents, topic: ${topicId}`);
+
+    // Use new streaming interaction with replies
+    cleanupSSE.current = streamInteraction(
       topicId,
       postId,
-      Math.min(75, agents.length),
-      (response: AgentResponse) => {
-        if (response.action === "comment" && response.content) {
-          const newComment: LocalComment = {
-            id: `comment-${Date.now()}-${Math.random()}`,
-            authorId: response.agent_id,
-            authorName: response.agent_name,
-            avatar: response.agent_name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2),
-            segment: response.agent_segment,
-            content: response.content,
-            upvotes: Math.floor(Math.random() * 20) + 1,
-            downvotes: Math.floor(Math.random() * 5),
-            sentiment: response.sentiment || "neutral",
-            timestamp: "just now",
-            replies: [],
-          };
+      postContent,
+      agents,
+      // On comment
+      (data) => {
+        const newComment: LocalComment = {
+          id: data.id,
+          authorId: data.agent_id,
+          authorName: data.agent_name,
+          avatar: data.agent_name
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+          segment: data.segment,
+          content: data.content,
+          upvotes: Math.floor(Math.random() * 20) + 1,
+          downvotes: Math.floor(Math.random() * 5),
+          sentiment: data.sentiment || "neutral",
+          timestamp: "just now",
+          replies: [],
+        };
 
-          setPosts((prev) =>
-            prev.map((post) => {
-              if (post.id === postId) {
-                return {
-                  ...post,
-                  comments: [...post.comments, newComment],
-                  commentCount: post.comments.length + 1,
-                };
-              }
-              return post;
-            })
-          );
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id === postId) {
+              return {
+                ...p,
+                comments: [...p.comments, newComment],
+                commentCount: p.comments.length + 1,
+              };
+            }
+            return p;
+          })
+        );
 
-          setStats((prev) => ({
-            ...prev,
-            totalComments: prev.totalComments + 1,
-            positiveCount:
-              prev.positiveCount + (response.sentiment === "positive" ? 1 : 0),
-            negativeCount:
-              prev.negativeCount + (response.sentiment === "negative" ? 1 : 0),
-            neutralCount:
-              prev.neutralCount + (response.sentiment === "neutral" ? 1 : 0),
-          }));
+        setStats((prev) => ({
+          ...prev,
+          totalComments: prev.totalComments + 1,
+          positiveCount: prev.positiveCount + (data.sentiment === "positive" ? 1 : 0),
+          negativeCount: prev.negativeCount + (data.sentiment === "negative" ? 1 : 0),
+          neutralCount: prev.neutralCount + (data.sentiment === "neutral" ? 1 : 0),
+        }));
+      },
+      // On reply
+      (data) => {
+        const newReply: LocalComment = {
+          id: data.id,
+          authorId: data.agent_id,
+          authorName: data.agent_name,
+          avatar: data.agent_name
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+          segment: data.segment,
+          content: data.content,
+          upvotes: Math.floor(Math.random() * 10) + 1,
+          downvotes: Math.floor(Math.random() * 2),
+          sentiment: data.sentiment || "neutral",
+          timestamp: "just now",
+          replies: [],
+        };
 
-          broadcastChannel.current?.postMessage({
-            type: "AGENT_ACTION",
-            agentId: response.agent_id,
-            entityId: response.entity_id,
-            action: "comment",
-            sentiment: response.sentiment,
-          });
-        } else if (response.action === "upvote") {
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id === postId) {
+              return {
+                ...p,
+                comments: p.comments.map((c) => {
+                  if (c.id === data.parent_id) {
+                    return { ...c, replies: [...c.replies, newReply] };
+                  }
+                  return c;
+                }),
+                commentCount: p.commentCount + 1,
+              };
+            }
+            return p;
+          })
+        );
+
+        setStats((prev) => ({
+          ...prev,
+          totalComments: prev.totalComments + 1,
+          positiveCount: prev.positiveCount + (data.sentiment === "positive" ? 1 : 0),
+          negativeCount: prev.negativeCount + (data.sentiment === "negative" ? 1 : 0),
+          neutralCount: prev.neutralCount + (data.sentiment === "neutral" ? 1 : 0),
+        }));
+      },
+      // On complete
+      (stats) => {
+        setIsSimulating(false);
+        if (stats) {
           setPosts((prev) =>
-            prev.map((post) =>
-              post.id === postId ? { ...post, upvotes: post.upvotes + 1 } : post
-            )
-          );
-        } else if (response.action === "downvote") {
-          setPosts((prev) =>
-            prev.map((post) =>
-              post.id === postId
-                ? { ...post, downvotes: post.downvotes + 1 }
-                : post
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    upvotes: p.upvotes + (stats.upvotes || 0),
+                    downvotes: p.downvotes + (stats.downvotes || 0),
+                  }
+                : p
             )
           );
         }
       },
-      () => setIsSimulating(false),
+      // On error
+      (err) => {
+        console.error("Simulation error:", err);
+        setIsSimulating(false);
+      }
+    );
+  };
+
+  const startSimulation = (topicId: string, postId: string) => {
+    // Get post content for the simulation
+    const post = posts.find(p => p.id === postId);
+    const postContent = post?.content || '';
+    const postTitle = post?.title || '';
+    startLiveSimulation(topicId, postId, postContent, postTitle);
+  };
+
+  // Start live simulation with continuous agent loop
+  const startLiveSimulation = (topicId: string, postId: string, postContent: string, postTitle: string) => {
+    setIsSimulating(true);
+    cleanupSSE.current?.();
+
+    console.log(`Starting LIVE simulation: ${agents.length} agents, topic: ${topicId}`);
+
+    cleanupSSE.current = streamLiveSimulation(
+      topicId,
+      postId,
+      postContent,
+      postTitle,
+      agents,
+      {
+        rounds: 50,
+        delayMs: 800,
+        onEvent: (event) => {
+          if (event.type === 'comment' && event.content) {
+            const newComment: LocalComment = {
+              id: event.id || `comment_${Math.random().toString(36).slice(2)}`,
+              authorId: event.agent_id || '',
+              authorName: event.agent_name || 'Unknown',
+              avatar: event.agent_name
+                ?.split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2) || '??',
+              segment: event.segment || 'casual',
+              content: event.content,
+              upvotes: Math.floor(Math.random() * 20) + 1,
+              downvotes: Math.floor(Math.random() * 5),
+              sentiment: (event.sentiment as "positive" | "neutral" | "negative") || 'neutral',
+              timestamp: 'just now',
+              replies: [],
+            };
+
+            setPosts((prev) =>
+              prev.map((p) => {
+                if (p.id === postId) {
+                  return {
+                    ...p,
+                    comments: [...p.comments, newComment],
+                    commentCount: p.comments.length + 1,
+                  };
+                }
+                return p;
+              })
+            );
+
+            setStats((prev) => ({
+              ...prev,
+              totalComments: prev.totalComments + 1,
+              positiveCount: prev.positiveCount + (event.sentiment === 'positive' ? 1 : 0),
+              negativeCount: prev.negativeCount + (event.sentiment === 'negative' ? 1 : 0),
+              neutralCount: prev.neutralCount + (event.sentiment === 'neutral' ? 1 : 0),
+            }));
+
+          } else if (event.type === 'reply' && event.content && event.parent_id) {
+            const newReply: LocalComment = {
+              id: event.id || `reply_${Math.random().toString(36).slice(2)}`,
+              authorId: event.agent_id || '',
+              authorName: event.agent_name || 'Unknown',
+              avatar: event.agent_name
+                ?.split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2) || '??',
+              segment: event.segment || 'casual',
+              content: event.content,
+              upvotes: Math.floor(Math.random() * 10) + 1,
+              downvotes: Math.floor(Math.random() * 2),
+              sentiment: (event.sentiment as "positive" | "neutral" | "negative") || 'neutral',
+              timestamp: 'just now',
+              replies: [],
+            };
+
+            setPosts((prev) =>
+              prev.map((p) => {
+                if (p.id === postId) {
+                  return {
+                    ...p,
+                    comments: p.comments.map((c) => {
+                      if (c.id === event.parent_id) {
+                        return { ...c, replies: [...c.replies, newReply] };
+                      }
+                      return c;
+                    }),
+                    commentCount: p.commentCount + 1,
+                  };
+                }
+                return p;
+              })
+            );
+
+            setStats((prev) => ({
+              ...prev,
+              totalComments: prev.totalComments + 1,
+              positiveCount: prev.positiveCount + (event.sentiment === 'positive' ? 1 : 0),
+              negativeCount: prev.negativeCount + (event.sentiment === 'negative' ? 1 : 0),
+              neutralCount: prev.neutralCount + (event.sentiment === 'neutral' ? 1 : 0),
+            }));
+
+          } else if (event.type === 'vote') {
+            // Update post votes
+            setPosts((prev) =>
+              prev.map((p) =>
+                p.id === postId
+                  ? {
+                      ...p,
+                      upvotes: p.upvotes + (event.vote_type === 'upvote' ? 1 : 0),
+                      downvotes: p.downvotes + (event.vote_type === 'downvote' ? 1 : 0),
+                    }
+                  : p
+              )
+            );
+          }
+        },
+        onComplete: (completionStats, adoptionScore) => {
+          setIsSimulating(false);
+          console.log('Live simulation complete:', completionStats, 'Adoption:', adoptionScore);
+        },
+        onError: (err) => {
+          console.error('Live simulation error:', err);
+          setIsSimulating(false);
+        }
+      }
+    );
+  };
+
+  // Keep old startSimulation for manual triggers (from forum page itself)
+  const startSimulationLegacy = (topicId: string, postId: string) => {
+    setIsSimulating(true);
+    cleanupSSE.current?.();
+
+    // Get post content for the simulation
+    const post = posts.find(p => p.id === postId);
+    const postContent = post?.content || '';
+
+    // Use new streaming interaction with replies
+    cleanupSSE.current = streamInteraction(
+      topicId,
+      postId,
+      postContent,
+      agents,
+      // On comment (initial comments on post)
+      (data) => {
+        const newComment: LocalComment = {
+          id: data.id,
+          authorId: data.agent_id,
+          authorName: data.agent_name,
+          avatar: data.agent_name
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+          segment: data.segment,
+          content: data.content,
+          upvotes: Math.floor(Math.random() * 20) + 1,
+          downvotes: Math.floor(Math.random() * 5),
+          sentiment: data.sentiment || "neutral",
+          timestamp: "just now",
+          replies: [],
+        };
+
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id === postId) {
+              return {
+                ...p,
+                comments: [...p.comments, newComment],
+                commentCount: p.comments.length + 1,
+              };
+            }
+            return p;
+          })
+        );
+
+        setStats((prev) => ({
+          ...prev,
+          totalComments: prev.totalComments + 1,
+          positiveCount: prev.positiveCount + (data.sentiment === "positive" ? 1 : 0),
+          negativeCount: prev.negativeCount + (data.sentiment === "negative" ? 1 : 0),
+          neutralCount: prev.neutralCount + (data.sentiment === "neutral" ? 1 : 0),
+        }));
+
+        broadcastChannel.current?.postMessage({
+          type: "AGENT_ACTION",
+          agentId: data.agent_id,
+          action: "comment",
+          sentiment: data.sentiment,
+        });
+      },
+      // On reply (agent replying to another agent)
+      (data) => {
+        const newReply: LocalComment = {
+          id: data.id,
+          authorId: data.agent_id,
+          authorName: data.agent_name,
+          avatar: data.agent_name
+            .split(" ")
+            .map((n: string) => n[0])
+            .join("")
+            .toUpperCase()
+            .slice(0, 2),
+          segment: data.segment,
+          content: data.content,
+          upvotes: Math.floor(Math.random() * 10) + 1,
+          downvotes: Math.floor(Math.random() * 2),
+          sentiment: data.sentiment || "neutral",
+          timestamp: "just now",
+          replies: [],
+        };
+
+        // Add reply to the parent comment
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id === postId) {
+              return {
+                ...p,
+                comments: p.comments.map((c) => {
+                  if (c.id === data.parent_id) {
+                    return {
+                      ...c,
+                      replies: [...c.replies, newReply],
+                    };
+                  }
+                  return c;
+                }),
+                commentCount: p.commentCount + 1,
+              };
+            }
+            return p;
+          })
+        );
+
+        setStats((prev) => ({
+          ...prev,
+          totalComments: prev.totalComments + 1,
+          positiveCount: prev.positiveCount + (data.sentiment === "positive" ? 1 : 0),
+          negativeCount: prev.negativeCount + (data.sentiment === "negative" ? 1 : 0),
+          neutralCount: prev.neutralCount + (data.sentiment === "neutral" ? 1 : 0),
+        }));
+
+        broadcastChannel.current?.postMessage({
+          type: "AGENT_ACTION",
+          agentId: data.agent_id,
+          action: "reply",
+          sentiment: data.sentiment,
+        });
+      },
+      // On complete
+      (completeStats) => {
+        setIsSimulating(false);
+        // Update post votes based on stats
+        if (completeStats) {
+          setPosts((prev) =>
+            prev.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    upvotes: p.upvotes + (completeStats.upvotes || 0),
+                    downvotes: p.downvotes + (completeStats.downvotes || 0),
+                  }
+                : p
+            )
+          );
+        }
+      },
+      // On error
       () => setIsSimulating(false)
     );
   };
@@ -286,7 +772,8 @@ export default function ForumPage() {
     ? posts.filter((p) => p.topic_id === selectedTopic.id)
     : posts;
 
-  if (agents.length === 0) {
+  // Show empty state only if no agents AND no topics exist
+  if (agents.length === 0 && topics.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <TopNav />
@@ -294,10 +781,10 @@ export default function ForumPage() {
           <div className="text-center">
             <Users className="w-16 h-16 mx-auto mb-4 text-text-muted" />
             <h2 className="text-xl font-semibold text-text mb-2">
-              No Agents Loaded
+              No Topics Yet
             </h2>
             <p className="text-text-secondary mb-4">
-              Generate agents from the Graph page first.
+              Run a simulation from the Graph page to create topics.
             </p>
             <button
               onClick={() => router.push("/graph")}
@@ -313,16 +800,16 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       <TopNav />
 
-      <div className="flex max-w-[1200px] mx-auto pt-6 px-6 gap-6">
+      <div className="flex-1 flex max-w-[1200px] mx-auto pt-6 px-6 gap-6 overflow-hidden">
         {/* Sidebar */}
-        <div className="w-[260px] shrink-0 flex flex-col gap-4">
+        <div className="w-[260px] shrink-0 flex flex-col gap-4 overflow-y-auto pb-6">
           {/* Topics */}
-          <div className="bg-surface rounded-[12px] border border-border overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+          <div className="bg-sage-light/20 rounded-[12px] border border-sage/20 overflow-hidden">
+            <div className="p-4 border-b border-sage/20 flex items-center justify-between bg-sage-light/50">
+              <h3 className="text-xs font-semibold text-sage-dark uppercase tracking-wide">
                 Feature Topics
               </h3>
               <button
@@ -368,16 +855,16 @@ export default function ForumPage() {
               {topics.map((topic) => (
                 <button
                   key={topic.id}
-                  onClick={() => setSelectedTopic(topic)}
-                  className={`w-full px-4 py-2.5 text-left hover:bg-background transition-colors ${
+                  onClick={() => router.push(`/forum/${topic.id}`)}
+                  className={`w-full px-4 py-2.5 text-left hover:bg-sage-light/50 transition-colors rounded-lg ${
                     selectedTopic?.id === topic.id
                       ? "bg-sage-light text-sage-dark font-medium"
-                      : "text-text"
+                      : "text-text hover:text-sage-dark"
                   }`}
                 >
-                  <div className="text-sm">{topic.subreddit}</div>
+                  <div className="text-sm font-medium">{topic.subreddit}</div>
                   <div className="text-xs text-text-muted">
-                    {topic.member_count} agents
+                    {topic.member_count || 0} agents
                   </div>
                 </button>
               ))}
@@ -435,7 +922,7 @@ export default function ForumPage() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-4 overflow-y-auto pb-6">
           {/* Topic Header */}
           {selectedTopic && (
             <div className="bg-surface rounded-[12px] border border-border p-5">
@@ -643,7 +1130,7 @@ export default function ForumPage() {
         </div>
 
         {/* Right Sidebar - Stats */}
-        <div className="w-[280px] shrink-0">
+        <div className="w-[280px] shrink-0 overflow-y-auto pb-6">
           <div className="bg-surface rounded-[12px] border border-border overflow-hidden">
             <div className="bg-sage p-4">
               <h3 className="text-sm font-semibold text-white">

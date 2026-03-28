@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Space_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { ActivityProvider } from "@/lib/activity-context";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -37,7 +38,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geist.variable} ${spaceMono.variable} antialiased`}>
-        {children}
+        <ActivityProvider>{children}</ActivityProvider>
       </body>
     </html>
   );

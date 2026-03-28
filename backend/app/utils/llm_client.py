@@ -27,6 +27,22 @@ class LLMClient:
 
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
 
+    def generate(
+        self,
+        prompt: str,
+        temperature: float = 0.7,
+        max_tokens: int = 4096
+    ) -> str:
+        """
+        Simple text generation from a prompt.
+        Convenience wrapper around chat().
+        """
+        return self.chat(
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+
     def chat(
         self,
         messages: List[Dict[str, str]],
@@ -132,4 +148,37 @@ class LLMClient:
         try:
             return json.loads(cleaned_response)
         except json.JSONDecodeError:
-            raise ValueError(f"LLM returned invalid JSON: {cleaned_response}")
+            # Try to repair truncated JSON
+            repaired = self._try_repair_json(cleaned_response)
+            if repaired is not None:
+                return repaired
+            raise ValueError(f"LLM returned invalid JSON: {cleaned_response[:500]}...")
+
+    def _try_repair_json(self, text: str) -> Optional[Dict[str, Any]]:
+        """
+        Attempt to repair truncated JSON by closing brackets/braces.
+        Returns None if repair fails.
+        """
+        # Count unclosed brackets
+        open_braces = text.count('{') - text.count('}')
+        open_brackets = text.count('[') - text.count(']')
+
+        # If severely truncated, don't attempt repair
+        if open_braces > 5 or open_brackets > 5:
+            return None
+
+        # Try adding closing brackets
+        repaired = text.rstrip()
+
+        # Remove trailing comma if present
+        if repaired.endswith(','):
+            repaired = repaired[:-1]
+
+        # Add closing brackets
+        repaired += ']' * open_brackets
+        repaired += '}' * open_braces
+
+        try:
+            return json.loads(repaired)
+        except json.JSONDecodeError:
+            return None
