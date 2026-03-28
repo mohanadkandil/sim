@@ -1,65 +1,106 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Zap, Lightbulb, Users, Play } from "lucide-react";
+
+const SUGGESTIONS = [
+  "Add AI copilot",
+  "Remove free tier",
+  "Redesign onboarding",
+  "Launch mobile app",
+];
+
+export default function InputPage() {
+  const router = useRouter();
+  const [featureText, setFeatureText] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleRun = async () => {
+    if (!featureText.trim()) return;
+
+    setIsRunning(true);
+    // Store the feature in sessionStorage for the output page
+    sessionStorage.setItem("agentsim_feature", featureText);
+
+    // Navigate to the thread simulation page
+    router.push("/thread");
+  };
+
+  const handleSuggestion = (suggestion: string) => {
+    setFeatureText(suggestion);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex items-center justify-center p-5">
+      <div className="w-full max-w-[680px] flex flex-col items-center gap-10">
+        {/* Top Section */}
+        <div className="flex flex-col items-center gap-4 w-full">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-sage rounded-[10px] flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-display text-[22px] font-medium text-text">
+              Crucible
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="font-display text-[44px] font-medium text-text text-center leading-[1.15] tracking-[-1px]">
+            What feature will you ship next?
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Input Card */}
+        <div className="w-full bg-surface rounded-[16px] p-6 border border-border shadow-[0_4px_30px_#00000006] flex flex-col gap-4">
+          <textarea
+            value={featureText}
+            onChange={(e) => setFeatureText(e.target.value)}
+            className="w-full bg-background rounded-[12px] border border-border p-4 px-5 text-[15px] text-text-secondary leading-relaxed resize-none outline-none min-h-[80px] placeholder:text-text-secondary"
+            rows={3}
+            placeholder="We will add dark mode support with custom themes and a palette editor so users can personalize their workspace..."
+          />
+
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Hints */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="pill pill-sage">
+                <Lightbulb className="w-3 h-3 text-sage" />
+                Be specific
+              </span>
+              <span className="pill pill-curious">
+                <Users className="w-3 h-3 text-curious" />
+                30 agents ready
+              </span>
+            </div>
+
+            {/* Run Button */}
+            <button
+              onClick={handleRun}
+              disabled={isRunning || !featureText.trim()}
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Play className="w-4 h-4" />
+              <span>{isRunning ? "Starting..." : "Run Simulation"}</span>
+            </button>
+          </div>
         </div>
-      </main>
+
+        {/* Suggestions */}
+        <div className="flex items-center gap-2 flex-wrap justify-center">
+          <span className="text-xs font-medium text-text-muted">Try:</span>
+          {SUGGESTIONS.map((suggestion) => (
+            <button
+              key={suggestion}
+              onClick={() => handleSuggestion(suggestion)}
+              className="inline-flex items-center rounded-[8px] px-3 py-1.5 border border-border bg-transparent text-xs text-text-secondary cursor-pointer whitespace-nowrap hover:bg-background transition-colors"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
