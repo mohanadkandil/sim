@@ -782,9 +782,16 @@ export default function GraphDetailPage() {
 
                   <textarea
                     value={featureText}
-                    onChange={(e) => setFeatureText(e.target.value)}
+                    onChange={(e) => {
+                      setFeatureText(e.target.value);
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                    ref={(el) => {
+                      if (el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
+                    }}
                     placeholder="Describe a feature to test..."
-                    className="w-full text-xs p-2 rounded-lg border border-border bg-background h-24 resize-none focus:border-sage focus:outline-none"
+                    className="w-full text-xs p-2 rounded-lg border border-border bg-background min-h-[80px] resize-none focus:border-sage focus:outline-none overflow-hidden"
                   />
                   <button
                     onClick={() => {
