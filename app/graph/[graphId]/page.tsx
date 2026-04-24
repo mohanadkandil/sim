@@ -887,6 +887,14 @@ export default function GraphDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  {(reactions.length > 0 || forumEvents.length > 0) && !isSimulating && !forumSimulating && (
+                    <button
+                      onClick={() => setShowDetails(!showDetails)}
+                      className="text-[10px] text-text-muted hover:text-sage transition-colors border border-border rounded px-2 py-1 hover:bg-sage-light/20"
+                    >
+                      {showDetails ? "Summary" : "Details"}
+                    </button>
+                  )}
                   {adoptionScore !== null && (
                     <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                       adoptionScore >= 65 ? "bg-sage/20 text-sage-dark" :
