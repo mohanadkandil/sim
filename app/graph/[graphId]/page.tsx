@@ -13,6 +13,13 @@ import {
   LiveSimulationEvent,
   SEGMENT_COLORS,
 } from "@/lib/forum-api";
+import { createAvatar } from "@dicebear/core";
+import { micah } from "@dicebear/collection";
+
+function agentAvatar(name: string): string {
+  const svg = createAvatar(micah, { seed: name }).toString();
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
 
 const API_BASE = "http://localhost:5001/api/graph";
 
@@ -126,6 +133,7 @@ export default function GraphDetailPage() {
                         agent.segment === 'new_user' ? 'curious' as const : 'neutral' as const,
               location: agent.segment.replace('_', ' '),
               color: agent.segment_color || "#8B5CF6",
+              avatar: agentAvatar(agent.name),
             }));
 
             setNodes(agentNodes);
@@ -198,14 +206,35 @@ export default function GraphDetailPage() {
             }
           }
 
-          // Also try agents endpoint
+          // Also try agents endpoint — add them as graph nodes too
           try {
             const agentsRes = await fetch(
               `http://localhost:5001/api/forum/agents/${graphId}`
             );
             const agentsData = await agentsRes.json();
             if (agentsData.success && agentsData.agents && agentsData.agents.length > 0) {
-              setAgents(agentsData.agents);
+              const fetchedAgents: ForumAgent[] = agentsData.agents;
+              setAgents(fetchedAgents);
+
+              const agentNodes: GraphNode[] = fetchedAgents.map((agent: ForumAgent) => ({
+                id: agent.id,
+                name: agent.name,
+                activity: agent.status || agent.segment.replace('_', ' '),
+                bio: agent.bio,
+                status: agent.status,
+                sentiment: agent.segment === 'churned' ? 'negative' as const :
+                          agent.segment === 'power_user' ? 'positive' as const :
+                          agent.segment === 'new_user' ? 'curious' as const : 'neutral' as const,
+                location: agent.segment.replace('_', ' '),
+                color: agent.segment_color || "#8B5CF6",
+                avatar: agentAvatar(agent.name),
+              }));
+
+              setNodes(prev => {
+                const existingIds = new Set(prev.map(n => n.id));
+                const newAgentNodes = agentNodes.filter(n => !existingIds.has(n.id));
+                return [...prev, ...newAgentNodes];
+              });
             }
           } catch (e) {
             // Ignore agent fetch errors

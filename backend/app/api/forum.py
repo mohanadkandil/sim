@@ -723,24 +723,24 @@ def _generate_agent_comment(llm: LLMClient, agent: Dict, post_content: str) -> D
     # Segment-specific style with NPS influence
     if segment == 'power_user':
         if nps_score >= 8:
-            style = "You love Lovable and want it to succeed. Share specific workflow improvements you'd like to see."
+            style = "You love Strava and want it to keep improving. Share how this would affect your training or segment hunting."
         else:
-            style = "You use Lovable heavily but have high standards. Point out what needs fixing before this feature."
+            style = "You use Strava heavily but have high standards. Point out what needs improving before this feature ships."
     elif segment == 'churned':
         reason = churn_reason or "it did not meet your needs"
-        style = f"You left Lovable because: {reason}. Be skeptical but fair about whether this addresses your concerns."
+        style = f"You left Strava because: {reason}. Be skeptical but fair about whether this addresses your concerns."
     elif segment == 'new_user':
         if nps_score >= 7:
-            style = "You're excited about Lovable and curious. Ask how this fits with what you're learning."
+            style = "You're excited about Strava and curious. Ask how this fits with what you're learning as a new athlete."
         else:
-            style = "You're still figuring out Lovable. Express confusion or ask for clarification."
+            style = "You're still figuring out Strava. Express confusion or ask for clarification."
     else:
-        style = "You're a practical Lovable user. Focus on whether this helps your day-to-day app building."
+        style = "You're a practical Strava user. Focus on whether this helps your day-to-day training and activity logging."
 
     # Build rich context with product awareness
-    context = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Lovable (an AI-powered app builder).
+    context = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Strava (social fitness tracking app for runners and cyclists).
 
-ABOUT LOVABLE: AI app builder that lets you create web apps by describing what you want. Features include Prompt to App, Visual Editor, Code Export, Deploy & Hosting, Database Integration, Auth, API Connections.
+ABOUT STRAVA: {PRODUCT_CONTEXT}
 
 YOUR PROFILE:
 - {bio}
@@ -748,14 +748,14 @@ YOUR PROFILE:
 - On {plan} plan for {tenure_months} months
 - NPS score: {nps_score}/10
 - You are {patience_desc}, {tech_desc}, and {price_desc}
-- Lovable features you use most: {', '.join(features_used[:3]) if features_used else 'basic features'}
+- Strava features you use most: {', '.join(features_used[:3]) if features_used else 'basic features'}
 
-The Lovable PM posted about a new feature:
+The Strava PM posted about a new feature:
 "{post_content[:400]}"
 
 {style}
 
-Write a realistic Reddit-style comment (1-2 sentences). Reference YOUR specific experience with Lovable. Be authentic.
+Write a realistic Reddit-style comment (1-2 sentences). Reference YOUR specific experience with Strava. Be authentic.
 Also indicate sentiment: positive, negative, or neutral.
 
 Respond ONLY in JSON: {{"content": "your comment", "sentiment": "positive|negative|neutral"}}"""
@@ -800,33 +800,33 @@ def _generate_agent_reply(llm: LLMClient, agent: Dict, parent_comment: Dict) -> 
 
     # Different reply dynamics based on segments and sentiment
     if segment == 'power_user' and parent_segment == 'new_user':
-        style = "Help the new Lovable user, share your experience with the platform, be welcoming but informative."
+        style = "Help the new Strava user, share your experience with training or segments, be welcoming but informative."
     elif segment == 'churned' and parent_sentiment == 'positive':
         if churn_reason:
-            style = f"Push back gently. You left Lovable because of {churn_reason}. See if they've considered that."
+            style = f"Push back gently. You left Strava because of {churn_reason}. See if they've considered that."
         else:
-            style = "Respectfully disagree or share why you're skeptical about Lovable based on past experience."
+            style = "Respectfully disagree or share why you're skeptical about Strava based on past experience."
     elif segment == 'new_user' and parent_segment == 'power_user':
-        style = "Thank them for the Lovable insight or ask a follow-up question about the platform."
+        style = "Thank them for the Strava tip or ask a follow-up question about training or the app."
     elif segment == 'power_user' and parent_segment == 'churned':
         if nps_score >= 8:
-            style = "Acknowledge their concerns but share why you stayed with Lovable and what's improved."
+            style = "Acknowledge their concerns but share why you stayed with Strava and what's improved."
         else:
-            style = "You understand their Lovable frustration. Validate or add your own concerns."
+            style = "You understand their Strava frustration. Validate or add your own concerns about the platform."
     else:
-        style = "Engage naturally about Lovable - agree, disagree, or add your perspective."
+        style = "Engage naturally about Strava - agree, disagree, or add your perspective as a fellow athlete."
 
     features_str = ', '.join(features_used[:2]) if features_used else 'basic features'
 
-    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Lovable (AI app builder).
+    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Strava (social fitness tracking app).
 About you: {bio[:100] if bio else 'A ' + segment.replace('_', ' ')}. You use: {features_str}.
 
-Another Lovable user ({parent_comment['agent_name']}, a {parent_segment.replace('_', ' ')}) wrote:
+Another Strava user ({parent_comment['agent_name']}, a {parent_segment.replace('_', ' ')}) wrote:
 "{parent_comment['content']}"
 
 {style}
 
-Write a brief reply (1 sentence). Be conversational and Reddit-style. Reference Lovable if relevant.
+Write a brief reply (1 sentence). Be conversational and Reddit-style. Reference Strava or your training if relevant.
 Also indicate your sentiment: positive, negative, or neutral.
 
 Respond ONLY in JSON: {{"content": "your reply", "sentiment": "positive|negative|neutral"}}"""
@@ -1189,10 +1189,10 @@ def _agent_choose_action(agent: Dict, state: Dict) -> Dict:
     return result
 
 
-# Product context for Lovable
-PRODUCT_CONTEXT = """Lovable is an AI-powered app builder that lets you create web applications by describing what you want in natural language.
-Key features: Prompt to App (describe and generate), Visual Editor, Code Export, Deploy & Hosting, Database Integration, User Authentication, API Connections, Templates, and AI Suggestions.
-Users range from non-technical founders building MVPs to developers prototyping quickly."""
+# Product context for Strava
+PRODUCT_CONTEXT = """Strava is a social fitness app used by runners, cyclists, and triathletes to track activities via GPS, compete on segments, follow other athletes, and join clubs.
+Key features: Activity Recording, GPS Tracking, Segments & KOMs, Route Builder, Clubs, Training Plans, Beacon (live tracking), Heart Rate Analysis, Power Meter Analysis, Heatmaps, and Monthly Challenges.
+Users range from casual joggers logging weekend runs to elite athletes obsessing over power data and segment leaderboards. Summit is the paid subscription tier."""
 
 
 def _execute_post_comment(llm: LLMClient, agent: Dict, state: Dict, post_content: str) -> Optional[Dict]:
@@ -1225,7 +1225,7 @@ def _execute_post_comment(llm: LLMClient, agent: Dict, state: Dict, post_content
     else:
         tone = "practical and focused on personal use"
 
-    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Lovable on {plan} plan ({tenure} months).
+    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Strava on {plan} plan ({tenure} months).
 
 PRODUCT: {PRODUCT_CONTEXT}
 
@@ -1233,12 +1233,12 @@ YOUR PROFILE:
 {bio[:100] if bio else ''}
 NPS: {nps_score}/10. Features you use: {', '.join(features_used[:3]) if features_used else 'basic features'}.
 
-The Lovable PM posted about a new feature:
+The Strava PM posted about a new feature:
 "{post_content[:300]}"
 {discussion_context}
 
 Write a Reddit-style comment (1-2 sentences). Your tone is {tone}.
-Reference YOUR experience with Lovable and how this feature would affect YOUR workflow.
+Reference YOUR experience with Strava and how this feature would affect YOUR training or activity tracking.
 
 JSON only: {{"content": "your comment", "sentiment": "positive|negative|neutral"}}"""
 
@@ -1290,13 +1290,13 @@ def _execute_reply(llm: LLMClient, agent: Dict, state: Dict, target: Dict) -> Op
 
     features_str = ', '.join(features_used[:2]) if features_used else 'basic features'
 
-    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Lovable (AI app builder).
+    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Strava (social fitness app).
 {bio[:80] if bio else ''} You mainly use: {features_str}.
 
-{target.get('agent_name')} (a {target_segment.replace('_', ' ')}) said about a Lovable feature:
+{target.get('agent_name')} (a {target_segment.replace('_', ' ')}) said about a Strava feature:
 "{target.get('content')}"
 
-Write a brief reply (1 sentence). Be {style}. Reference your Lovable experience if relevant.
+Write a brief reply (1 sentence). Be {style}. Reference your Strava or training experience if relevant.
 
 JSON only: {{"content": "your reply", "sentiment": "positive|negative|neutral"}}"""
 
@@ -1337,18 +1337,18 @@ def _execute_create_post(llm: LLMClient, agent: Dict, state: Dict, original_cont
         return None
 
     if segment == 'power_user':
-        topic_type = "feature request or improvement idea for Lovable"
+        topic_type = "feature request or improvement idea for Strava"
     else:
         reason = churn_reason or "limitations you experienced"
         topic_type = f"concern about {reason}"
 
     features_str = ', '.join(features_used[:3]) if features_used else 'the platform'
 
-    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Lovable (AI app builder).
+    prompt = f"""You are {agent.get('name')}, a {segment.replace('_', ' ')} of Strava (social fitness app).
 {bio[:100] if bio else ''} You use: {features_str}.
 
-Based on the PM's announcement about a new Lovable feature, create a {topic_type}.
-Write a Reddit-style post title and brief content (2-3 sentences) about Lovable.
+Based on the PM's announcement about a new Strava feature, create a {topic_type}.
+Write a Reddit-style post title and brief content (2-3 sentences) about Strava.
 
 JSON only: {{"title": "Post title", "content": "Post content"}}"""
 

@@ -67,6 +67,7 @@ venv/
 ENV/
 env/
 .venv/
+.venv*/
 
 # IDE
 .idea/
@@ -78,9 +79,11 @@ env/
 # Logs
 *.log
 logs/
+backend/logs/
 
 # Backend specific
 backend/uploads/
 backend/projects/
+backend/data/lovable_users.json
 *.db
 *.sqlite3

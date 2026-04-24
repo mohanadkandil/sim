@@ -47,8 +47,30 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
   const tooltipRef = useRef<HTMLDivElement>(null);
   const simulationRef = useRef<d3.Simulation<AgentNode, AgentLink> | null>(null);
   const gRef = useRef<d3.Selection<SVGGElement, unknown, null, undefined> | null>(null);
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const nodeMapRef = useRef<Map<string, AgentNode>>(new Map());
   const initializedRef = useRef(false);
+
+  const fitView = useCallback(() => {
+    if (!svgRef.current || !simulationRef.current || !zoomRef.current) return;
+    const nodes = simulationRef.current.nodes();
+    if (nodes.length === 0) return;
+    const container = svgRef.current.parentElement;
+    const w = container?.clientWidth || 800;
+    const h = container?.clientHeight || 600;
+    const xs = nodes.map(d => d.x ?? 0);
+    const ys = nodes.map(d => d.y ?? 0);
+    const x0 = Math.min(...xs) - 50;
+    const x1 = Math.max(...xs) + 50;
+    const y0 = Math.min(...ys) - 50;
+    const y1 = Math.max(...ys) + 50;
+    const scale = Math.min(0.9, 0.9 * Math.min(w / (x1 - x0), h / (y1 - y0)));
+    const tx = w / 2 - scale * (x0 + x1) / 2;
+    const ty = h / 2 - scale * (y0 + y1) / 2;
+    d3.select(svgRef.current)
+      .transition().duration(600)
+      .call(zoomRef.current.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+  }, []);
 
   // Handle pulsing nodes
   useEffect(() => {
@@ -116,6 +138,7 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
         g.attr('transform', event.transform);
       });
 
+    zoomRef.current = zoom;
     svg.call(zoom);
 
     // Create groups for links and nodes
@@ -129,8 +152,9 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
         .id((d) => d.id)
         .distance(100)
         .strength(0.5))
-      .force('charge', d3.forceManyBody().strength(-400))
-      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('charge', d3.forceManyBody().strength(-150))
+      .force('x', d3.forceX(width / 2).strength(0.06))
+      .force('y', d3.forceY(height / 2).strength(0.06))
       .force('collision', d3.forceCollide().radius(35))
       .on('tick', () => updatePositions());
 
@@ -210,6 +234,7 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
     });
 
     // Update simulation
+    const isFirstLoad = nodeMapRef.current.size === 0 || simulation.nodes().length === 0;
     simulation.nodes(updatedNodes);
     (simulation.force('link') as d3.ForceLink<AgentNode, AgentLink>)?.links(validLinks);
 
@@ -248,11 +273,13 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
       .style('opacity', 0)
       .attr('transform', (d) => `translate(${d.x || 0},${d.y || 0}) scale(0.1)`);
 
-    // Add clip path definitions for new nodes
+    // Add clip path definitions for avatar circles
     const defs = g.select('defs');
     nodeEnter.each(function(d) {
+      if (!d.avatar) return;
+      const safeId = d.id.replace(/[^a-zA-Z0-9_-]/g, '_');
       defs.append('clipPath')
-        .attr('id', `clip-${d.id}`)
+        .attr('id', `clip-${safeId}`)
         .append('circle')
         .attr('r', 20)
         .attr('cx', 0)
@@ -265,14 +292,14 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
       .attr('fill', '#fff')
       .style('filter', 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))');
 
-    // Colored inner circle (always show - no avatar fallback needed)
+    // Inner circle — always segment color (visible as fallback and as ring)
     nodeEnter.append('circle')
       .attr('r', 20)
       .attr('fill', (d) => d.color)
       .attr('stroke', '#fff')
       .attr('stroke-width', 2);
 
-    // Initials
+    // Initials — always rendered; hidden on successful avatar load
     nodeEnter.append('text')
       .attr('class', 'initials')
       .text((d) => d.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2))
@@ -282,6 +309,36 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
       .attr('font-size', '10px')
       .attr('font-weight', '600')
       .attr('pointer-events', 'none');
+
+    // Avatar via foreignObject — error-safe: hides itself on load failure, reveals initials on load success
+    nodeEnter.filter((d) => !!d.avatar)
+      .append('foreignObject')
+      .attr('x', -20)
+      .attr('y', -20)
+      .attr('width', 40)
+      .attr('height', 40)
+      .attr('clip-path', (d) => {
+        const safeId = d.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+        return `url(#clip-${safeId})`;
+      })
+      .each(function(this: SVGForeignObjectElement, d) {
+        const fo = this;
+        const nodeGroupEl = this.parentElement;
+        const img = document.createElementNS('http://www.w3.org/1999/xhtml', 'img') as HTMLImageElement;
+        img.src = d.avatar!;
+        img.width = 40;
+        img.height = 40;
+        img.style.objectFit = 'cover';
+        img.style.display = 'block';
+        img.addEventListener('load', () => {
+          const initials = nodeGroupEl?.querySelector('text.initials') as SVGTextElement | null;
+          if (initials) initials.style.display = 'none';
+        });
+        img.addEventListener('error', () => {
+          fo.style.display = 'none';
+        });
+        this.appendChild(img);
+      });
 
     // Node labels
     nodeEnter.append('text')
@@ -388,19 +445,16 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
 
     // Restart simulation with some energy
     if (staticMode) {
-      // In static mode, let nodes settle naturally then stop
       simulation.alpha(0.8).restart();
       setTimeout(() => {
         simulation.stop();
-        // Fix all node positions after settling
-        updatedNodes.forEach(n => {
-          n.fx = n.x;
-          n.fy = n.y;
-        });
+        updatedNodes.forEach(n => { n.fx = n.x; n.fy = n.y; });
         updatePositions();
+        if (isFirstLoad) fitView();
       }, 2000);
     } else {
       simulation.alpha(0.3).restart();
+      if (isFirstLoad) setTimeout(() => fitView(), 1500);
     }
 
   }, [nodes, links, onNodeClick, initializeGraph, updatePositions, staticMode]);
@@ -416,6 +470,13 @@ export default function D3ForceGraph({ nodes, links, onNodeClick, pulsingNodes, 
   return (
     <div className="relative w-full h-full">
       <svg ref={svgRef} className="w-full h-full" />
+      <button
+        onClick={fitView}
+        className="absolute bottom-4 right-4 bg-white border border-[#E5E5E0] rounded-lg px-3 py-1.5 text-xs text-[#6B6B6B] hover:bg-[#F5F5F0] shadow-sm transition-colors"
+        title="Reset view"
+      >
+        ⊞ Fit view
+      </button>
       <div
         ref={tooltipRef}
         className="fixed pointer-events-none bg-white rounded-lg shadow-lg border border-[#F0EFEC] px-4 py-3 z-50 opacity-0 transition-opacity"

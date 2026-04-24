@@ -1116,7 +1116,7 @@ def stream_synthetic():
             # Load synthetic data
             loader = get_data_loader()
             product_info = loader.product_info
-            product_name = product_info.get("name", "Lovable")
+            product_name = product_info.get("name", "Strava")
 
             yield f"data: {json.dumps({'type': 'status', 'message': f'Loading {product_name} user data...', 'progress': 10})}\n\n"
 

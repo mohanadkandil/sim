@@ -26,7 +26,7 @@ class SyntheticDataLoader:
         if data_path is None:
             # Default path relative to this file
             base_dir = Path(__file__).parent.parent.parent
-            data_path = base_dir / "data" / "lovable_users.json"
+            data_path = base_dir / "data" / "strava_users.json"
 
         self.data_path = Path(data_path)
         self._data = None
