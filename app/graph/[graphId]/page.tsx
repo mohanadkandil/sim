@@ -119,6 +119,7 @@ export default function GraphDetailPage() {
     upvotes: 0,
   });
   const cleanupForumSim = useRef<(() => void) | null>(null);
+  const pendingAutoStart = useRef(false);
 
   // Persist forum events to sessionStorage whenever they change
   useEffect(() => {
@@ -279,6 +280,10 @@ export default function GraphDetailPage() {
           sessionStorage.getItem("crucible_last_feature");
         if (storedFeature) {
           setFeatureText(storedFeature);
+          // Only auto-start when feature came from sessionStorage (not from user typing)
+          if (sessionStorage.getItem("crucible_feature_text")) {
+            pendingAutoStart.current = true;
+          }
         }
 
         // Store graphId
@@ -298,9 +303,11 @@ export default function GraphDetailPage() {
     };
   }, [graphId]);
 
-  // Auto-start simulation if feature text exists and we have agents
+  // Auto-start simulation only when feature text was pre-loaded from sessionStorage
   useEffect(() => {
+    if (!pendingAutoStart.current) return;
     if (featureText && agents.length > 0 && !isSimulating && nodes.length > 0 && !topicId) {
+      pendingAutoStart.current = false; // consume the flag so it never re-fires
       console.log("Auto-starting simulation with", agents.length, "agents");
 
       // Create forum topic FIRST, then start simulation
