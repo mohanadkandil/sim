@@ -7,10 +7,10 @@ import { Zap, Lightbulb, Users, Play, Loader2 } from "lucide-react";
 const API_BASE = "http://localhost:5001/api/graph";
 
 const SUGGESTIONS = [
-  "Add AI copilot that helps users write better content",
-  "Remove free tier and convert to paid-only model",
-  "Redesign onboarding with interactive tutorials",
-  "Launch mobile app with offline support",
+  "Add AI-powered training plan recommendations based on recent activity",
+  "Remove free tier and move everything behind Strava Summit",
+  "Let users challenge friends to beat their segment times",
+  "Show a weekly effort score on the home feed",
 ];
 
 export default function InputPage() {

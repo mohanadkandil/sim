@@ -1767,3 +1767,64 @@ def stream_simulation_updates(topic_id: str):
             'Access-Control-Allow-Origin': '*'
         }
     )
+
+
+
+@forum_bp.route('/suggest-revision', methods=['POST'])
+def suggest_revision():
+    """
+    Given a feature description and simulation feedback, suggest a revised feature.
+    """
+    try:
+        data = request.get_json()
+        original_feature = data.get('feature', '')
+        reactions = data.get('reactions', [])
+        forum_events = data.get('forum_events', [])
+
+        if not original_feature:
+            return jsonify({'success': False, 'error': 'feature text required'}), 400
+
+        feedback_lines = []
+        for r in reactions[:30]:
+            sentiment = r.get('sentiment', 'neutral')
+            segment = r.get('segment', '').replace('_', ' ')
+            comment = r.get('comment', '')
+            feedback_lines.append(f"[{segment}, {sentiment}] {comment}")
+
+        for e in forum_events[:40]:
+            if e.get('type') in ('comment', 'reply') and e.get('content'):
+                sentiment = e.get('sentiment', 'neutral')
+                segment = e.get('segment', '').replace('_', ' ')
+                content = e.get('content', '')
+                feedback_lines.append(f"[{segment}, {sentiment}] {content}")
+
+        feedback_text = '\n'.join(feedback_lines[:50])
+
+        prompt = f"""You are a product manager synthesizing user simulation feedback to improve a feature proposal.
+
+Original feature:
+{original_feature}
+
+Simulated user feedback ({len(feedback_lines)} responses):
+{feedback_text}
+
+Based on this feedback, write an improved version of the feature proposal that:
+- Addresses the most common concerns or objections
+- Keeps what users responded positively to
+- Is specific and actionable (2-4 sentences)
+- Does NOT include meta-commentary like "Based on feedback..." - just write the revised feature description directly
+
+Revised feature:"""
+
+        llm = LLMClient()
+        suggestion = llm.generate(prompt, temperature=0.6, max_tokens=300).strip()
+
+        for prefix in ["Revised feature:", "Improved feature:", "Revised:", "Improved:"]:
+            if suggestion.startswith(prefix):
+                suggestion = suggestion[len(prefix):].strip()
+
+        return jsonify({'success': True, 'suggestion': suggestion})
+
+    except Exception as e:
+        logger.error(f"suggest_revision error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500

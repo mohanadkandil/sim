@@ -472,17 +472,20 @@ export default function GraphPage() {
 
   // Fetch projects on mount and check for stream mode
   useEffect(() => {
-    fetchProjects();
-
-    // Check if we should start streaming (from home page)
+    // If there's an active graph session, go straight back to it
+    const activeGraphId = sessionStorage.getItem("crucible_graph_id");
     const streamMode = sessionStorage.getItem("crucible_stream_mode");
     const featureText = sessionStorage.getItem("crucible_feature_text");
 
-    if (streamMode === "true" && featureText) {
-      // Clear stream mode flag only - keep feature_text for the dynamic graph page
-      sessionStorage.removeItem("crucible_stream_mode");
+    if (activeGraphId && !streamMode) {
+      router.replace(`/graph/${activeGraphId}`);
+      return;
+    }
 
-      // Start streaming build
+    fetchProjects();
+
+    if (streamMode === "true" && featureText) {
+      sessionStorage.removeItem("crucible_stream_mode");
       startStreamingBuild(featureText);
     }
 
